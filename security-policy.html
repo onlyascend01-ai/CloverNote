@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Policy - CloverNote</title>
+    <link rel="icon" type="image/png" href="CloverNote.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 text-slate-900 leading-relaxed selection:bg-emerald-100">
+    <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 h-16 flex items-center">
+        <div class="max-w-4xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <div class="w-8 h-8 bg-emerald-900 rounded-lg flex items-center justify-center shadow-sm">
+                    <img src="CloverNote.png" alt="Logo" class="w-5 h-5">
+                </div>
+                <span class="text-lg font-extrabold tracking-tight text-emerald-900">CloverNote</span>
+            </a>
+            <a href="index.html" class="text-xs font-bold text-slate-500 hover:text-emerald-900 transition-colors uppercase tracking-wider">Back to Home</a>
+        </div>
+    </nav>
+
+    <main class="pt-32 pb-24 px-6 max-w-3xl mx-auto">
+        <article class="bg-white p-10 md:p-16 rounded-[2.5rem] shadow-xl border border-slate-100">
+            <h1 class="text-4xl font-black mb-8">Security Policy</h1>
+
+            <div class="space-y-10 text-slate-600 font-medium">
+                <section>
+                    <h2 class="text-xl font-bold text-slate-900 mb-4">Our Commitment</h2>
+                    <p>CloverNote is designed with a "Security by Default" architecture. Since your data never leaves your device, the traditional risks of cloud breaches and server-side leaks are effectively eliminated.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-bold text-slate-900 mb-4">Encryption Standards</h2>
+                    <p>When you enable password protection, CloverNote uses AES-256-GCM encryption to secure your local vault. Encryption keys are generated using PBKDF2 with 100,000 iterations, ensuring brute-force resistance.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-bold text-slate-900 mb-4">No Remote Access</h2>
+                    <p>We do not have a back-door to your data. There is no remote management console or recovery service. Your security is absolute, but this also means if you lose your password and don't have a backup, we cannot recover your data.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-bold text-slate-900 mb-4">Reporting Vulnerabilities</h2>
+                    <p>If you discover a security vulnerability in CloverNote, we encourage you to report it to us immediately at <a href="mailto:security@clovernote.app" class="text-emerald-600 font-bold">security@clovernote.app</a>. We appreciate responsible disclosure.</p>
+                </section>
+            </div>
+        </article>
+    </main>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>

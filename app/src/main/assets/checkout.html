@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - CloverNote Premium</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #ffffff; }
+        .btn-pay { transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1); }
+        .btn-pay:active { transform: scale(0.95); }
+        #card-element {
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 2px solid transparent;
+        }
+        #card-element--focus {
+            border-color: #064e3b;
+        }
+    </style>
+</head>
+<body class="text-slate-900 antialiased p-6">
+    <main class="max-w-md mx-auto space-y-8">
+        <div class="text-center pt-4">
+            <h1 class="text-2xl font-black tracking-tight mb-2">Upgrade to Pro</h1>
+            <p class="text-slate-500 font-medium text-sm">Account: <span id="checkout-user" class="font-bold text-emerald-600">Guest</span></p>
+        </div>
+
+        <section class="bg-slate-50 p-6 rounded-3xl space-y-6">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-200">
+                <span class="font-bold text-slate-500">Premium License</span>
+                <span class="font-black text-xl">$15.00</span>
+            </div>
+
+            <form id="payment-form" class="space-y-4">
+                <div id="card-element">
+                    <!-- Stripe Elements placeholder -->
+                </div>
+                <div id="card-errors" role="alert" class="text-red-500 text-xs font-bold text-center mt-2"></div>
+            </form>
+        </section>
+
+        <div class="space-y-4">
+            <button id="submit-button" class="btn-pay w-full py-5 bg-emerald-900 text-white rounded-2xl font-black text-lg shadow-xl shadow-emerald-900/20">
+                Complete Purchase
+            </button>
+            <p class="text-center text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Secure Stripe Transaction</p>
+        </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div id="success-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center hidden z-[1000] p-6 opacity-0 transition-opacity duration-500">
+        <div class="bg-white rounded-[3rem] w-full p-10 text-center shadow-2xl">
+            <div class="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="check-circle" class="w-10 h-10"></i>
+            </div>
+            <h3 class="text-2xl font-black mb-2">Success!</h3>
+            <p class="text-slate-500 font-medium mb-8 text-sm">Your vault is now unlocked.</p>
+            <button onclick="finishCheckout()" class="w-full py-5 bg-emerald-900 text-white rounded-2xl font-black">Return to Vault</button>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        const user = localStorage.getItem('clover-user') || 'Guest';
+        document.getElementById('checkout-user').textContent = user;
+
+        // Initialize Stripe
+        const stripe = Stripe('pk_test_TYooMQauvdEDq54NiTphI7jx'); // Replace with your key
+        const elements = stripe.elements();
+
+        const style = {
+            base: {
+                color: '#0f172a',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                fontSmoothing: 'antialiased',
+                fontSize: '16px',
+                fontWeight: '700',
+                '::placeholder': { color: '#94a3b8' }
+            }
+        };
+
+        const card = elements.create('card', { style: style });
+        card.mount('#card-element');
+
+        card.on('change', ({error}) => {
+            const displayError = document.getElementById('card-errors');
+            displayError.textContent = error ? error.message : '';
+        });
+
+        const btn = document.getElementById('submit-button');
+        btn.addEventListener('click', async (event) => {
+            btn.disabled = true;
+            btn.textContent = "Processing...";
+
+            // In a real app, you'd call your server here to create a PaymentIntent
+            // and then confirm the payment with stripe.confirmCardPayment
+
+            // Simulating Stripe success for this implementation
+            setTimeout(() => {
+                simulateSuccess();
+            }, 2000);
+        });
+
+        function simulateSuccess() {
+            const overlay = document.getElementById('success-overlay');
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.add('opacity-100'), 10);
+        }
+
+        function finishCheckout() {
+            window.parent.postMessage('payment-success', '*');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloverNote | The Sovereign Writing Sanctuary</title>
+    <link rel="icon" type="image/png" href="CloverNote.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #064e3b;
+            --primary-light: #10b981;
+            --accent: #fbbf24;
+            --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        * { cursor: default; -webkit-font-smoothing: antialiased; }
+        button, a, .clickable { cursor: pointer; }
+
+        @keyframes fadeInPage { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #ffffff;
+            color: #0f172a;
+            overflow-x: hidden;
+            animation: fadeInPage 1.5s var(--ease-out-expo);
+        }
+
+        .reveal { opacity: 0; transform: translateY(40px) scale(0.98); transition: all 1.2s var(--ease-out-expo); }
+        .reveal.active { opacity: 1; transform: translateY(0) scale(1); }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            transition: all 0.6s var(--ease-out-expo);
+        }
+        .glass-nav.scrolled { height: 64px; background: rgba(255, 255, 255, 0.98); box-shadow: 0 15px 40px -10px rgba(0,0,0,0.1); }
+
+        .btn-premium {
+            position: relative; overflow: hidden; transition: all 0.5s var(--ease-out-expo);
+        }
+        .btn-premium:hover { transform: translateY(-5px); box-shadow: 0 25px 50px -10px rgba(6, 78, 59, 0.4); }
+        .btn-premium:active { transform: scale(0.95); }
+
+        .bento-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+        .bento-item { background: #f8fafc; border-radius: 40px; padding: 40px; border: 1px solid rgba(0,0,0,0.03); transition: all 0.6s var(--ease-out-expo); }
+        .bento-item:hover { transform: translateY(-10px) scale(1.01); background: white; border-color: var(--primary-light); box-shadow: 0 40px 80px -20px rgba(0,0,0,0.1); }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #064e3b 0%, #10b981 100%);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .floating-icon { animation: float 5s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+        footer a { transition: all 0.4s var(--ease-out-expo); display: inline-block; }
+        footer a:hover { transform: translateX(10px); color: var(--primary-light); }
+
+        .bg-grid {
+            background-size: 100px 100px;
+            background-image: linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0,0,0,0.02) 1px, transparent 1px);
+        }
+
+        .footer-col { opacity: 0; transform: translateY(20px); transition: all 0.8s var(--ease-out-expo); }
+        .footer-col.active { opacity: 1; transform: translateY(0); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; transition: background 0.3s; }
+        ::-webkit-scrollbar-thumb:hover { background: #064e3b; }
+
+        .step-number {
+            width: 48px; height: 48px; border-radius: 16px; background: var(--primary); color: white;
+            display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px;
+        }
+
+        .check-icon { color: var(--primary-light); }
+        .cross-icon { color: #ef4444; }
+    </style>
+</head>
+<body class="bg-[#fafbfb] bg-grid">
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 w-full z-[100] glass-nav h-20 flex items-center transition-all">
+        <div class="max-w-7xl mx-auto px-10 w-full flex items-center justify-between">
+            <div class="flex items-center gap-4 clickable group" onclick="scrollToTop()">
+                <div class="w-10 h-10 bg-emerald-900 rounded-xl flex items-center justify-center shadow-2xl transition-transform duration-1000 group-hover:rotate-[360deg]">
+                    <img src="CloverNote.png" alt="Logo" class="w-6 h-6">
+                </div>
+                <span class="text-2xl font-black tracking-tighter text-emerald-950">CloverNote</span>
+            </div>
+            <div class="hidden lg:flex items-center gap-12 font-bold text-[11px] text-slate-500 uppercase tracking-[0.2em]">
+                <a href="#features" class="nav-link">Experience</a>
+                <a href="#security" class="nav-link">Security</a>
+                <a href="#workflow" class="nav-link">Workflow</a>
+                <a href="#pricing" class="nav-link">Pricing</a>
+            </div>
+            <div class="flex items-center gap-6">
+                <div id="user-display" class="hidden items-center gap-3 font-bold text-emerald-900 clickable hover:scale-110 transition-transform" onclick="toggleAuthModal()">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 border-2 border-emerald-200 flex items-center justify-center shadow-inner"><i data-lucide="user" class="w-5 h-5"></i></div>
+                    <span id="nav-username" class="text-xs uppercase tracking-widest">User</span>
+                </div>
+                <button onclick="scrollToDownload()" class="btn-premium bg-emerald-900 text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl">
+                    Get CloverNote
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-64 pb-40 relative text-center">
+        <div class="max-w-5xl mx-auto px-10">
+            <div class="reveal active inline-flex items-center gap-3 bg-emerald-50 text-emerald-800 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-12 border border-emerald-100 shadow-xl">
+                <i data-lucide="zap" class="w-4 h-4 floating-icon text-emerald-500"></i> v2.1.0 — Sovereign Release
+            </div>
+            <h1 class="reveal active text-8xl md:text-[11rem] font-black text-slate-900 tracking-tighter leading-tight mb-14">
+                Write in the <br><span class="gradient-text italic px-2">Sanctuary.</span>
+            </h1>
+            <p class="reveal active text-2xl text-slate-500 max-w-3xl mx-auto leading-relaxed mb-20 font-medium">
+                CloverNote is a high-performance sanctuary built for speed, aesthetics, and absolute data sovereignty. Your thoughts, undisturbed by the cloud.
+            </p>
+            <div class="reveal active flex flex-col sm:flex-row gap-8 justify-center items-center">
+                <button onclick="scrollToDownload()" class="btn-premium bg-emerald-900 text-white px-14 py-7 rounded-[2.5rem] font-black text-2xl flex items-center gap-6 shadow-3xl">
+                    <i data-lucide="download" class="w-8 h-8"></i> Get Installer
+                </button>
+                <button onclick="toggleAuthModal()" class="btn-premium bg-white border-2 border-slate-100 text-slate-700 px-14 py-7 rounded-[2.5rem] font-black text-2xl flex items-center gap-6 shadow-2xl hover:bg-slate-50">
+                    <i data-lucide="user" class="w-8 h-8"></i> Vault Login
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Bar -->
+    <section class="py-24 border-y border-slate-100 bg-white/50 reveal">
+        <div class="max-w-7xl mx-auto px-10">
+            <p class="text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-16">Trusted by creative professionals at</p>
+            <div class="flex flex-wrap justify-center gap-20 md:gap-32 opacity-20 grayscale">
+                <h4 class="text-3xl font-black italic tracking-tighter">CLOVER STUDIO</h4>
+                <h4 class="text-3xl font-black tracking-tighter">VAULT.INC</h4>
+                <h4 class="text-3xl font-black tracking-tighter">NEBULA</h4>
+                <h4 class="text-3xl font-black tracking-tighter">QUANTUM</h4>
+                <h4 class="text-3xl font-black tracking-tighter">ORIGIN</h4>
+            </div>
+        </div>
+    </section>
+
+    <!-- Philosophy -->
+    <section class="py-60 px-10 max-w-7xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-32 items-center">
+            <div class="reveal">
+                <h2 class="text-[11px] font-black text-emerald-600 uppercase tracking-[0.6em] mb-10">The Philosophy</h2>
+                <h3 class="text-7xl font-black text-slate-900 tracking-tighter leading-none mb-12">Data should stay <br>where it's made.</h3>
+                <p class="text-slate-500 text-xl font-medium leading-relaxed mb-12">We believe your ideas are your most valuable assets. In an era of mandatory cloud sync, CloverNote provides a sanctuary where your data is never mined, sold, or synced without your explicit command.</p>
+                <div class="flex gap-12">
+                    <div class="p-8 bg-white rounded-[3rem] shadow-xl border border-slate-50 flex-1">
+                        <div class="text-5xl font-black text-emerald-950 mb-2">0%</div>
+                        <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">Cloud Exposure</div>
+                    </div>
+                    <div class="p-8 bg-white rounded-[3rem] shadow-xl border border-slate-50 flex-1">
+                        <div class="text-5xl font-black text-emerald-950 mb-2">AES</div>
+                        <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">256-bit Enforced</div>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal relative">
+                <div class="bg-emerald-900/5 aspect-square rounded-[5rem] flex items-center justify-center p-12">
+                    <div class="bg-white p-12 rounded-[4rem] shadow-3xl text-center hover:scale-105 transition-transform duration-1000">
+                        <i data-lucide="shield-check" class="w-24 h-24 text-emerald-600 mx-auto mb-8 floating-icon"></i>
+                        <h4 class="text-3xl font-black text-slate-900">End-to-End Local</h4>
+                        <p class="text-slate-400 font-bold mt-2 uppercase text-xs tracking-widest">Sovereignty Active</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Bento -->
+    <section id="features" class="py-48 px-10 max-w-7xl mx-auto">
+        <div class="reveal text-center mb-32">
+            <h2 class="text-[11px] font-black text-emerald-600 uppercase tracking-[0.6em] mb-8">Integrated Core</h2>
+            <h3 class="text-8xl font-black text-slate-900 tracking-tighter leading-none text-center">Built for power.</h3>
+        </div>
+
+        <div class="bento-grid">
+            <div class="bento-item col-span-2 row-span-1 reveal group">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mb-10 group-hover:scale-110 transition-transform shadow-inner"><i data-lucide="zap" class="w-8 h-8"></i></div>
+                <h4 class="text-4xl font-black mb-4">400ms Cold Start</h4>
+                <p class="text-slate-500 text-lg leading-relaxed">No loading bars. No "checking for updates." capturing your thoughts at the speed of hardware, not the speed of the internet.</p>
+            </div>
+            <div class="bento-item col-span-2 row-span-1 reveal group overflow-hidden relative">
+                <div class="relative z-10">
+                    <h4 class="text-4xl font-black mb-6">Multi-Vault Engine</h4>
+                    <p class="text-slate-500 text-xl leading-relaxed">Organize your work, personal life, and secret research into distinct, isolated encrypted vaults.</p>
+                </div>
+                <i data-lucide="database" class="absolute -bottom-10 -right-10 w-48 h-48 text-emerald-900/5 group-hover:scale-125 transition-transform duration-1000"></i>
+            </div>
+            <div class="bento-item col-span-1 row-span-1 reveal group">
+                <i data-lucide="type" class="w-12 h-12 text-blue-600 mb-10 transition-transform group-hover:scale-110"></i>
+                <h4 class="text-2xl font-black mb-4">Typography</h4>
+                <p class="text-slate-500 text-sm">Plus Jakarta Sans & Merriweather collection.</p>
+            </div>
+            <div class="bento-item col-span-1 row-span-1 reveal group">
+                <i data-lucide="file-down" class="w-12 h-12 text-purple-600 mb-10 transition-transform group-hover:scale-110"></i>
+                <h4 class="text-2xl font-black mb-4">Native Export</h4>
+                <p class="text-slate-500 text-sm">PDF and Markdown pixel-perfect preservation.</p>
+            </div>
+            <div class="bento-item col-span-2 row-span-1 reveal bg-emerald-950 text-white flex flex-col justify-between">
+                <div>
+                    <h4 class="text-4xl font-black mb-6">100% Sovereign</h4>
+                    <p class="text-emerald-100/40 text-xl leading-relaxed">Your notes live on your device, encrypted by keys only you hold. Zero cloud access.</p>
+                </div>
+                <div class="mt-8 flex gap-4">
+                    <div class="px-4 py-2 bg-white/5 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest">No Backdoors</div>
+                    <div class="px-4 py-2 bg-white/5 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest">Offline Core</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workflow Section -->
+    <section id="workflow" class="py-60 bg-[#fafbfb]">
+        <div class="max-w-7xl mx-auto px-10">
+            <div class="reveal text-center mb-32">
+                <h2 class="text-[11px] font-black text-emerald-600 uppercase tracking-[0.6em] mb-8 text-center">Seamless Entry</h2>
+                <h3 class="text-7xl font-black text-slate-900 tracking-tighter text-center">Set up your sanctuary <br>in seconds.</h3>
+            </div>
+            <div class="grid md:grid-cols-3 gap-16">
+                <div class="reveal group">
+                    <div class="step-number mb-10 group-hover:scale-110 transition-transform shadow-lg">1</div>
+                    <h4 class="text-3xl font-black mb-6">Install Build</h4>
+                    <p class="text-slate-500 text-lg leading-relaxed">Download the native CloverNote build for your OS. Zero dependencies, lightweight, and incredibly fast installation.</p>
+                </div>
+                <div class="reveal group" style="transition-delay: 0.1s">
+                    <div class="step-number mb-10 group-hover:scale-110 transition-transform shadow-lg">2</div>
+                    <h4 class="text-3xl font-black mb-6">Seed your Vault</h4>
+                    <p class="text-slate-500 text-lg leading-relaxed">Create your first encrypted vault locally. Set a master password that never leaves your machine's CPU.</p>
+                </div>
+                <div class="reveal group" style="transition-delay: 0.2s">
+                    <div class="step-number mb-10 group-hover:scale-110 transition-transform shadow-lg">3</div>
+                    <h4 class="text-3xl font-black mb-6">Write Forever</h4>
+                    <p class="text-slate-500 text-lg leading-relaxed">Capture your ideas in a beautifully designed space. Your notes are stored in open formats, so you own them forever.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison -->
+    <section class="py-60 bg-white">
+        <div class="max-w-5xl mx-auto px-10 text-center">
+            <div class="reveal mb-32">
+                <h2 class="text-[11px] font-black text-emerald-600 uppercase tracking-[0.6em] mb-8 text-center">The Difference</h2>
+                <h3 class="text-7xl font-black text-slate-900 tracking-tighter text-center">Beyond the Cloud.</h3>
+            </div>
+            <div class="reveal bg-slate-50 rounded-[4rem] shadow-3xl overflow-hidden border border-slate-100">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 border-b border-slate-200">
+                            <th class="p-12 text-xs font-black uppercase tracking-widest text-slate-400">Core Metric</th>
+                            <th class="p-12 text-xs font-black uppercase tracking-widest text-emerald-900 bg-emerald-50">CloverNote</th>
+                            <th class="p-12 text-xs font-black uppercase tracking-widest text-slate-400">Cloud Apps</th>
+                        </tr>
+                    </thead>
+                    <tbody class="font-bold text-lg text-slate-600">
+                        <tr class="border-b border-slate-200 hover:bg-white transition-colors">
+                            <td class="p-12">Cloud Requirement</td>
+                            <td class="p-12 bg-emerald-50/50 text-emerald-700">None (0.00%)</td>
+                            <td class="p-12 text-slate-400">Mandatory</td>
+                        </tr>
+                        <tr class="border-b border-slate-200 hover:bg-white transition-colors">
+                            <td class="p-12">Telemetry/Tracking</td>
+                            <td class="p-12 bg-emerald-50/50 text-emerald-700">Disabled (Hardcoded)</td>
+                            <td class="p-12 text-slate-400">Active Analytics</td>
+                        </tr>
+                        <tr class="border-b border-slate-200 hover:bg-white transition-colors">
+                            <td class="p-12">Startup Speed</td>
+                            <td class="p-12 bg-emerald-50/50 text-emerald-700">&lt; 400ms</td>
+                            <td class="p-12 text-slate-400">2 - 5 seconds</td>
+                        </tr>
+                        <tr class="hover:bg-white transition-colors">
+                            <td class="p-12">Encryption Location</td>
+                            <td class="p-12 bg-emerald-50/50 text-emerald-700">Edge (Local CPU)</td>
+                            <td class="p-12 text-slate-400">Server Side</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-60 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-10">
+            <div class="reveal text-center mb-32">
+                <h2 class="text-[11px] font-black text-emerald-600 uppercase tracking-[0.6em] mb-8 text-center">Testimonials</h2>
+                <h3 class="text-7xl font-black text-slate-900 tracking-tighter text-center">Voices of Sovereignty.</h3>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="reveal bento-item p-12 bg-white flex flex-col justify-between">
+                    <p class="text-slate-600 text-xl leading-relaxed italic mb-12">"CloverNote is the only workspace I trust with my most sensitive research. The local-first architecture isn't just a feature—it's peace of mind."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-emerald-900 text-white flex items-center justify-center font-black">A</div>
+                        <div><h4 class="font-black text-slate-900 uppercase text-xs tracking-widest">Alex Rivers</h4><p class="text-[10px] text-slate-400 font-bold">Investigative Journalist</p></div>
+                    </div>
+                </div>
+                <div class="reveal bento-item p-12 bg-white flex flex-col justify-between mt-12 md:mt-0" style="transition-delay: 0.1s">
+                    <p class="text-slate-600 text-xl leading-relaxed italic mb-12">"The speed is incredible. I've never used a writing tool that feels this responsive. It's like my thoughts are appearing on screen before I even type them."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-emerald-900 text-white flex items-center justify-center font-black">S</div>
+                        <div><h4 class="font-black text-slate-900 uppercase text-xs tracking-widest">Sarah Chen</h4><p class="text-[10px] text-slate-400 font-bold">Software Architect</p></div>
+                    </div>
+                </div>
+                <div class="reveal bento-item p-12 bg-white flex flex-col justify-between" style="transition-delay: 0.2s">
+                    <p class="text-slate-600 text-xl leading-relaxed italic mb-12">"Finally a tool that understands typography. Jakarta Sans looks stunning on this minimalist canvas. Writing has never felt more premium."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-emerald-900 text-white flex items-center justify-center font-black">M</div>
+                        <div><h4 class="font-black text-slate-900 uppercase text-xs tracking-widest">Marcus Vane</h4><p class="text-[10px] text-slate-400 font-bold">Creative Director</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="py-60 px-10 max-w-4xl mx-auto border-t border-slate-100">
+        <div class="reveal text-center mb-32">
+            <h2 class="text-[11px] font-black text-emerald-600 uppercase tracking-[0.6em] mb-8">Support</h2>
+            <h3 class="text-7xl font-black text-slate-900 tracking-tighter">Common Questions.</h3>
+        </div>
+        <div class="space-y-12">
+            <div class="reveal faq-item pb-12 border-b border-slate-100">
+                <h4 class="text-2xl font-black text-slate-900 mb-4">How is my data encrypted?</h4>
+                <p class="text-slate-500 text-lg leading-relaxed">Every vault uses AES-256-GCM encryption at rest. Your encryption key is derived locally using Argon2 and never leaves your CPU. Even if your hard drive is stolen, your notes remain unreadable without your master password.</p>
+            </div>
+            <div class="reveal faq-item pb-12 border-b border-slate-100">
+                <h4 class="text-2xl font-black text-slate-900 mb-4">What happens if I lose my password?</h4>
+                <p class="text-red-500 font-black text-lg leading-relaxed">Because we have zero servers and zero backdoors, we cannot recover your password. We recommend storing your vault credentials in a physical password manager or hardware key.</p>
+            </div>
+            <div class="reveal faq-item pb-12 border-b border-slate-100">
+                <h4 class="text-2xl font-black text-slate-900 mb-4">Can I import my existing notes?</h4>
+                <p class="text-slate-500 text-lg leading-relaxed">Yes. CloverNote supports mass import for Markdown and plain text files. Our native bridge ensures thousands of notes are indexed in milliseconds.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-80 bg-emerald-950 text-white text-center relative overflow-hidden">
+        <div class="max-w-5xl mx-auto px-10 reveal relative z-10">
+            <h2 class="text-8xl md:text-[12rem] font-black mb-20 tracking-tighter leading-tight pb-8">Think in <br><span class="gradient-text italic inline-block px-4">High Definition.</span></h2>
+            <div class="flex flex-col items-center gap-12">
+                <button onclick="scrollToDownload()" class="btn-premium bg-white text-emerald-950 px-24 py-10 rounded-full font-black text-4xl shadow-3xl hover:scale-110 transition-transform">Get CloverNote Build</button>
+                <div class="flex items-center gap-8 opacity-20 text-sm font-black uppercase tracking-[0.8em]">
+                    <span>Windows</span><span>•</span><span>Android</span><span>•</span><span>iPadOS</span>
+                </div>
+            </div>
+        </div>
+        <div class="absolute inset-0 opacity-[0.05] pointer-events-none" style="background-image: linear-gradient(var(--primary-light) 1px, transparent 1px), linear-gradient(90deg, var(--primary-light) 1px, transparent 1px); background-size: 150px 100px;"></div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-60 bg-white border-t border-slate-100">
+        <div class="max-w-7xl mx-auto px-10">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-24 mb-48">
+                <div class="col-span-1 md:col-span-1 footer-col">
+                    <div class="flex items-center gap-4 mb-12 group cursor-pointer" onclick="scrollToTop()">
+                        <img src="CloverNote.png" class="w-12 h-12 group-hover:rotate-12 transition-transform" alt="Logo">
+                        <span class="text-3xl font-black text-emerald-950 tracking-tighter">CloverNote</span>
+                    </div>
+                    <p class="text-slate-500 text-sm leading-relaxed font-medium">The sanctuary for high-performance creative work and sovereign data management.</p>
+                </div>
+                <div class="footer-col">
+                    <h5 class="text-xs font-black uppercase text-slate-400 tracking-[0.5em] mb-12">Product</h5>
+                    <ul class="space-y-6 font-bold text-sm text-slate-600 uppercase tracking-widest">
+                        <li><a href="#features">Experience</a></li>
+                        <li><a href="#security">Vault Engine</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="updates.html">What's New</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5 class="text-xs font-black uppercase text-slate-400 tracking-[0.5em] mb-12">Company</h5>
+                    <ul class="space-y-6 font-bold text-sm text-slate-600 uppercase tracking-widest">
+                        <li><a href="about.html">Mission</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="press.html">Press Kit</a></li>
+                        <li><a href="status.html">Status</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5 class="text-xs font-black uppercase text-slate-400 tracking-[0.5em] mb-12">Support</h5>
+                    <ul class="space-y-6 font-bold text-sm text-slate-600 uppercase tracking-widest">
+                        <li><a href="docs.html">Documentation</a></li>
+                        <li><a href="community.html">Community</a></li>
+                        <li><a href="help-desk.html">Help Desk</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5 class="text-xs font-black uppercase text-slate-400 tracking-[0.5em] mb-12">Legal</h5>
+                    <ul class="space-y-6 font-bold text-sm text-slate-600 uppercase tracking-widest">
+                        <li><a href="privacy.html">Privacy</a></li>
+                        <li><a href="terms.html">Terms</a></li>
+                        <li><a href="cookies.html">Cookies</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="flex justify-between items-center pt-24 border-t border-slate-200 text-slate-400 font-black uppercase tracking-[0.6em] text-xs reveal">
+                <p>© 2026 CloverNote Desktop. Multi-Platform Sovereignty.</p>
+                <div class="flex gap-16">
+                    <a href="https://github.com/jdndu/CloverNote" class="hover:text-emerald-900 transition-transform hover:scale-150"><i data-lucide="github"></i></a>
+                    <a href="#" class="hover:text-emerald-900 transition-transform hover:scale-150"><i data-lucide="twitter"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-3xl flex items-center justify-center hidden z-[1000] p-6 opacity-0 transition-all duration-1000">
+        <div class="bg-white rounded-[5rem] max-w-lg w-full p-24 shadow-3xl modal-content text-center scale-90 transition-all duration-1000 border border-white/20">
+            <div id="auth-state-login">
+                <div class="w-28 h-24 bg-emerald-50 text-emerald-600 rounded-[3rem] flex items-center justify-center mx-auto mb-12 shadow-inner"><i data-lucide="lock" class="w-14 h-14 floating-icon"></i></div>
+                <h3 class="text-5xl font-black text-slate-900 mb-6 tracking-tighter leading-none">Vault Login</h3>
+                <p class="text-slate-500 mb-14 font-medium text-lg leading-relaxed">Securely access your encrypted notes.</p>
+                <div class="space-y-6">
+                    <input type="text" id="auth-username" placeholder="Username" class="w-full p-8 bg-slate-50 rounded-[2.5rem] outline-none font-black text-center text-2xl focus:ring-8 focus:ring-emerald-500/5 focus:bg-white transition-all shadow-inner">
+                    <input type="password" id="auth-password" placeholder="Password" class="w-full p-8 bg-slate-50 rounded-[2.5rem] outline-none font-black text-center text-2xl focus:ring-8 focus:ring-emerald-500/5 focus:bg-white transition-all shadow-inner">
+                    <button onclick="handleAuth()" class="w-full py-9 bg-emerald-900 text-white rounded-[3rem] font-black text-2xl shadow-3xl flex items-center justify-center gap-4 hover:bg-emerald-800 hover:-translate-y-2 active:scale-95 transition-all"><i data-lucide="log-in" class="w-8 h-8"></i> Sign In</button>
+                    <div id="google-signin-btn" class="w-full flex justify-center py-4 scale-125 hover:scale-110 transition-transform"></div>
+                    <button onclick="hideAuthModal()" class="w-full py-6 text-slate-400 font-bold text-base uppercase tracking-[0.3em] hover:text-slate-600 transition-colors">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (nav) {
+                if (window.scrollY > 30) nav.classList.add('scrolled');
+                else nav.classList.remove('scrolled');
+            }
+        });
+
+        function scrollToTop() { window.scrollTo({top: 0, behavior: 'smooth'}); }
+        function scrollToDownload() { document.getElementById('pricing').scrollIntoView({behavior: 'smooth'}); }
+
+        function toggleAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.remove('hidden');
+                modal.classList.add('opacity-100');
+                modal.querySelector('.modal-content').classList.remove('scale-90');
+                modal.querySelector('.modal-content').classList.add('scale-100');
+                initGoogleSignIn();
+            }, 10);
+        }
+
+        function hideAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            modal.querySelector('.modal-content').classList.remove('scale-100');
+            modal.querySelector('.modal-content').classList.add('scale-90');
+            modal.classList.remove('opacity-100');
+            setTimeout(() => { modal.style.display = 'none'; modal.classList.add('hidden'); }, 1000);
+        }
+
+        function handleAuth() {
+            const name = document.getElementById('auth-username').value.trim();
+            if(!name) return;
+            const user = { username: name };
+            localStorage.setItem('clover-user', JSON.stringify(user));
+            updateUserUI();
+            hideAuthModal();
+        }
+
+        function initGoogleSignIn() {
+            if (typeof google !== 'undefined') {
+                google.accounts.id.initialize({
+                    client_id: "850229943996-1e2l5fvkqo6nrnkpg41cb9m8er9ntmtt.apps.googleusercontent.com",
+                    callback: handleCredentialResponse
+                });
+                google.accounts.id.renderButton(
+                    document.getElementById("google-signin-btn"),
+                    { theme: "outline", size: "large", width: "100%", shape: "pill", text: "continue_with" }
+                );
+            }
+        }
+
+        function handleCredentialResponse(response) {
+            const responsePayload = JSON.parse(atob(response.credential.split('.')[1]));
+            const user = { username: responsePayload.name, email: responsePayload.email, provider: 'google' };
+            localStorage.setItem('clover-user', JSON.stringify(user));
+            updateUserUI();
+            hideAuthModal();
+        }
+
+        function decodeJwtResponse(token) {
+            let base64Url = token.split('.')[1];
+            let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function updateUserUI() {
+            const user = JSON.parse(localStorage.getItem('clover-user') || 'null');
+            const display = document.getElementById('user-display');
+            const nameSpan = document.getElementById('nav-username');
+            if(user) { display.classList.replace('hidden', 'flex'); nameSpan.textContent = user.username; }
+            else display.classList.add('hidden');
+        }
+
+        function handleStripe(plan) {
+            const user = JSON.parse(localStorage.getItem('clover-user') || 'null');
+            if(!user) { toggleAuthModal(); return; }
+            window.location.href = `checkout.html?plan=${plan}`;
+        }
+
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.05, rootMargin: '0px 0px -100px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+        document.querySelectorAll('.footer-col').forEach(el => revealObserver.observe(el));
+    </script>
+</body>
+</html>

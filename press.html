@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Press Kit - CloverNote</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #064e3b;
+            --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s var(--ease-out-expo), transform 1s var(--ease-out-expo);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .animate-in { animation: fadeInUp 1s var(--ease-out-expo) forwards; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen p-6 md:p-12">
+    <div class="max-w-4xl mx-auto bg-white rounded-[3rem] p-12 md:p-20 shadow-2xl animate-in">
+        <h1 class="text-5xl font-black mb-8 tracking-tight text-emerald-950 reveal">Press Kit</h1>
+        <p class="text-xl text-slate-500 mb-12 reveal">Assets and information for media and creators.</p>
+
+        <section class="space-y-12">
+            <div class="reveal">
+                <h2 class="text-xs font-black uppercase text-emerald-600 tracking-[0.4em] mb-6">Brand Identity</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-50 p-8 rounded-3xl flex flex-col items-center justify-center gap-4 hover:scale-105 hover:bg-emerald-50 transition-all duration-500 group">
+                        <img src="CloverNote.png" class="w-16 h-16 transition-transform group-hover:rotate-12" alt="CloverNote Logo">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Icon (PNG)</span>
+                    </div>
+                    <div class="bg-emerald-900 p-8 rounded-3xl flex flex-col items-center justify-center gap-4 hover:scale-105 hover:shadow-xl transition-all duration-500 group">
+                        <img src="CloverNote.png" class="w-16 h-16 invert transition-transform group-hover:rotate-12" alt="CloverNote Logo Inverted">
+                        <span class="text-[10px] font-bold text-emerald-400/50 uppercase tracking-widest">Inverted (PNG)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reveal">
+                <h2 class="text-xs font-black uppercase text-emerald-600 tracking-[0.4em] mb-6">The Pitch</h2>
+                <div class="bg-slate-50 p-8 rounded-3xl border-l-4 border-emerald-600 hover:shadow-lg transition-all duration-500">
+                    <p class="text-slate-700 leading-relaxed italic">
+                        "CloverNote is the world's first multi-platform, local-first writing sanctuary. Designed for sovereign minds, it eliminates cloud dependency while providing a high-performance, aesthetic workspace for thinkers and creators."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <div class="mt-20 pt-12 border-t border-slate-100 flex justify-between items-center reveal">
+            <a href="index.html" class="text-xs font-black uppercase text-slate-400 hover:text-emerald-700 transition-all tracking-widest flex items-center gap-2 hover:gap-4">
+                ← Back to Home
+            </a>
+            <button class="bg-emerald-900 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:translate-y-[-2px] active:scale-95 transition-all">Download All Assets</button>
+        </div>
+    </div>
+    <script>
+        lucide.createIcons();
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

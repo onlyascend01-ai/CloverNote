@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - CloverNote</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #064e3b;
+            --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s var(--ease-out-expo), transform 1s var(--ease-out-expo);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .animate-in { animation: fadeInUp 1s var(--ease-out-expo) forwards; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col items-center justify-center p-6">
+    <div class="max-w-3xl w-full bg-white rounded-[3rem] p-12 md:p-20 shadow-2xl animate-in">
+        <div class="flex items-center gap-4 mb-12">
+            <img src="CloverNote.png" class="w-12 h-12 transition-transform duration-700 hover:rotate-12" alt="Logo">
+            <h1 class="text-4xl font-black tracking-tight text-emerald-950">Our Mission</h1>
+        </div>
+
+        <div class="space-y-8 text-lg text-slate-600 leading-relaxed">
+            <p class="reveal">
+                CloverNote was born out of a simple realization: our digital thoughts are increasingly becoming public property. In an era of mandatory cloud sync and data mining, we wanted to build a sanctuary.
+            </p>
+            <p class="reveal">
+                We believe that <span class="text-emerald-700 font-bold">privacy is a human right</span>, not a feature. Our goal is to provide the most powerful, aesthetic, and secure writing environment on the planet.
+            </p>
+            <div class="grid grid-cols-2 gap-8 pt-8 border-t border-slate-100 reveal">
+                <div class="hover:translate-x-2 transition-transform duration-500">
+                    <h3 class="font-black text-slate-900 uppercase text-xs tracking-widest mb-2">Local First</h3>
+                    <p class="text-sm">We don't have servers for your notes. You own your vault entirely.</p>
+                </div>
+                <div class="hover:translate-x-2 transition-transform duration-500">
+                    <h3 class="font-black text-slate-900 uppercase text-xs tracking-widest mb-2">Aesthetic Driven</h3>
+                    <p class="text-sm">Writing is a creative act. Your workspace should inspire you.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-16 pt-12 border-t border-slate-100 flex justify-between items-center reveal">
+            <a href="index.html" class="text-xs font-black uppercase text-slate-400 hover:text-emerald-700 transition-all tracking-widest flex items-center gap-2 hover:gap-4">
+                ← Back to Home
+            </a>
+            <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">© 2026 CloverNote</p>
+        </div>
+    </div>
+
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

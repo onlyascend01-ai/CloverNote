@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Status - CloverNote</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #064e3b;
+            --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse-emerald {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s var(--ease-out-expo), transform 1s var(--ease-out-expo);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .animate-in { animation: fadeInUp 1s var(--ease-out-expo) forwards; }
+
+        .status-card { transition: all 0.5s var(--ease-out-expo); }
+        .status-card:hover { transform: scale(1.02) translateX(10px); border-color: rgba(16, 185, 129, 0.2); }
+
+        .incident-item { transition: all 0.4s var(--ease-out-expo); }
+        .incident-item:hover { transform: translateX(5px); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen p-6 md:p-12">
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-[3rem] p-12 shadow-2xl overflow-hidden animate-in">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-12 reveal">
+                <div class="flex items-center gap-4 group">
+                    <img src="CloverNote.png" class="w-10 h-10 transition-transform group-hover:rotate-12" alt="Logo">
+                    <h1 class="text-3xl font-black tracking-tight text-emerald-950">System Status</h1>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-black uppercase tracking-widest" style="animation: pulse-emerald 2s infinite">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    All Systems Operational
+                </div>
+            </div>
+
+            <!-- Status Grid -->
+            <div class="space-y-4 reveal">
+                <div class="p-6 bg-slate-50 rounded-3xl flex items-center justify-between border border-transparent status-card group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shadow-sm text-emerald-600 transition-transform group-hover:scale-110">
+                            <i data-lucide="shield-check"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-900">Local Vault Engine</h3>
+                            <p class="text-xs text-slate-400">AES-256 Encryption & Indexing</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-black text-emerald-600 uppercase">Operational</span>
+                </div>
+
+                <div class="p-6 bg-slate-50 rounded-3xl flex items-center justify-between border border-transparent status-card group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shadow-sm text-blue-600 transition-transform group-hover:scale-110">
+                            <i data-lucide="file-output"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-900">PDF Export Engine</h3>
+                            <p class="text-xs text-slate-400">Native Chromium Rendering</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-black text-emerald-600 uppercase">Operational</span>
+                </div>
+
+                <div class="p-6 bg-slate-50 rounded-3xl flex items-center justify-between border border-transparent status-card group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shadow-sm text-amber-600 transition-transform group-hover:scale-110">
+                            <i data-lucide="credit-card"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-900">Stripe Billing API</h3>
+                            <p class="text-xs text-slate-400">License verification & Payments</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-black text-emerald-600 uppercase">Operational</span>
+                </div>
+
+                <div class="p-6 bg-slate-50 rounded-3xl flex items-center justify-between border border-transparent status-card group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shadow-sm text-purple-600 transition-transform group-hover:scale-110">
+                            <i data-lucide="refresh-cw"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-900">Update Server</h3>
+                            <p class="text-xs text-slate-400">Auto-updater for Desktop & Mobile</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-black text-emerald-600 uppercase">Operational</span>
+                </div>
+            </div>
+
+            <!-- Incident History -->
+            <div class="mt-16 pt-12 border-t border-slate-100 reveal">
+                <h2 class="text-xs font-black uppercase text-slate-400 tracking-[0.4em] mb-8">Incident History</h2>
+                <div class="space-y-8">
+                    <div class="flex gap-6 incident-item">
+                        <div class="text-[10px] font-bold text-slate-300 uppercase tracking-widest pt-1">Mar 12</div>
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-800">No incidents reported.</h4>
+                            <p class="text-xs text-slate-400">Everything ran smoothly today.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-6 incident-item">
+                        <div class="text-[10px] font-bold text-slate-300 uppercase tracking-widest pt-1">Mar 11</div>
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-800">Scheduled Maintenance</h4>
+                            <p class="text-xs text-slate-400">Billing API successfully migrated to Stripe v3.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-20 pt-12 border-t border-slate-100 flex justify-between items-center reveal">
+                <a href="index.html" class="text-xs font-black uppercase text-slate-400 hover:text-emerald-700 transition-all tracking-widest flex items-center gap-2 hover:gap-4">
+                    ← Back to Home
+                </a>
+                <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Uptime: 99.99%</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        lucide.createIcons();
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

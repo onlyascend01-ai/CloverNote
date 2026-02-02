@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CloverNote Mobile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #064e3b;
+            --bg: #ffffff;
+            --ease-ios: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #ffffff;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .view-container {
+            position: absolute;
+            inset: 0;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s var(--ease-ios), opacity 0.3s var(--ease-ios);
+        }
+
+        .view-hidden-right { transform: translateX(100%); opacity: 0; pointer-events: none; }
+        .view-hidden-left { transform: translateX(-20%); opacity: 0; pointer-events: none; }
+
+        .note-card {
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .note-card.active {
+            border-left: 4px solid var(--primary);
+            background: #f8fafc;
+        }
+
+        #mobile-editor {
+            flex: 1;
+            width: 100%;
+            outline: none;
+            font-size: 18px;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        #mobile-editor:empty:before {
+            content: attr(placeholder);
+            color: #cbd5e1;
+            pointer-events: none;
+        }
+
+        button {
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .safe-pt { padding-top: env(safe-area-inset-top, 24px); }
+    </style>
+</head>
+<body>
+
+    <div id="view-list" class="view-container">
+        <header class="safe-pt bg-white border-b border-slate-50 px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-black text-slate-900">Vault</h1>
+            <button id="btn-create" class="bg-emerald-900 text-white p-3 rounded-full shadow-lg">
+                <i data-lucide="plus" class="w-6 h-6"></i>
+            </button>
+        </header>
+        <div id="mobile-notes-list" class="flex-1 overflow-y-auto px-6 py-6">
+            <!-- Notes populated here -->
+        </div>
+    </div>
+
+    <div id="view-editor" class="view-container view-hidden-right">
+        <header class="safe-pt bg-white border-b border-slate-50 px-4 py-3 flex items-center justify-between">
+            <button id="btn-back" class="flex items-center gap-1 text-emerald-900 font-bold">
+                <i data-lucide="chevron-left" class="w-6 h-6"></i> Back
+            </button>
+            <div id="save-indicator" class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Saved</div>
+            <button id="btn-delete" class="text-red-500">
+                <i data-lucide="trash-2" class="w-5 h-5"></i>
+            </button>
+        </header>
+        <div class="flex-1 flex flex-col p-6">
+            <input type="text" id="editor-title" placeholder="Untitled Document" class="w-full text-3xl font-black outline-none border-none mb-4 text-slate-900">
+            <div id="mobile-editor" contenteditable="true" placeholder="Start writing here..." class="flex-1"></div>
+        </div>
+    </div>
+
+    <script>
+        console.log("Mobile script starting...");
+
+        window.onerror = function(msg, url, line) {
+            console.log("JS Error: " + msg + " at " + line);
+            return false;
+        };
+
+        let notes = [];
+        let activeNoteId = null;
+
+        function init() {
+            console.log("Initializing app...");
+            try {
+                if (window.lucide) lucide.createIcons();
+                loadData();
+                renderList();
+
+                // Add Event Listeners instead of onclick
+                document.getElementById('btn-create').addEventListener('click', createNote);
+                document.getElementById('btn-back').addEventListener('click', showList);
+                document.getElementById('btn-delete').addEventListener('click', deleteCurrentNote);
+
+                document.getElementById('editor-title').addEventListener('input', doSave);
+                document.getElementById('mobile-editor').addEventListener('input', doSave);
+
+                console.log("Init complete.");
+            } catch (e) {
+                console.log("Init failed: " + e.message);
+            }
+        }
+
+        function loadData() {
+            try {
+                const data = localStorage.getItem('clover-data-guest');
+                notes = data ? JSON.parse(data) : [];
+                console.log("Loaded " + notes.length + " notes.");
+            } catch(e) {
+                notes = [];
+                console.log("Load data failed.");
+            }
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem('clover-data-guest', JSON.stringify(notes));
+            } catch(e) {
+                console.log("Save failed.");
+            }
+        }
+
+        function showList() {
+            activeNoteId = null;
+            document.getElementById('view-list').classList.remove('view-hidden-left');
+            document.getElementById('view-editor').classList.add('view-hidden-right');
+            renderList();
+        }
+
+        function showEditor(id) {
+            activeNoteId = id;
+            const n = notes.find(x => x.id === id);
+            if (n) {
+                document.getElementById('editor-title').value = n.title || '';
+                document.getElementById('mobile-editor').innerHTML = n.content || '';
+                document.getElementById('view-list').classList.add('view-hidden-left');
+                document.getElementById('view-editor').classList.remove('view-hidden-right');
+            }
+        }
+
+        function renderList() {
+            const list = document.getElementById('mobile-notes-list');
+            list.innerHTML = '';
+
+            if (notes.length === 0) {
+                list.innerHTML = '<div class="text-center py-20 text-slate-300 font-bold uppercase text-xs tracking-widest">No Documents</div>';
+                return;
+            }
+
+            notes.forEach(n => {
+                const el = document.createElement('div');
+                el.className = 'note-card';
+                el.innerHTML = `
+                    <div class="font-bold text-slate-800 text-lg mb-1 truncate">${n.title || 'Untitled'}</div>
+                    <div class="text-[10px] text-slate-400 font-black uppercase tracking-wider">${new Date(n.updatedAt).toLocaleDateString()}</div>
+                `;
+                el.addEventListener('click', () => showEditor(n.id));
+                list.appendChild(el);
+            });
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function createNote() {
+            console.log("Creating note...");
+            const n = {
+                id: Date.now().toString(),
+                title: '',
+                content: '',
+                updatedAt: new Date().toISOString()
+            };
+            notes.unshift(n);
+            saveData();
+            showEditor(n.id);
+        }
+
+        function deleteCurrentNote() {
+            if (!activeNoteId) return;
+            notes = notes.filter(n => n.id !== activeNoteId);
+            saveData();
+            showList();
+        }
+
+        let saveTimer;
+        function doSave() {
+            document.getElementById('save-indicator').textContent = "Saving...";
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => {
+                const n = notes.find(x => x.id === activeNoteId);
+                if (n) {
+                    n.title = document.getElementById('editor-title').value;
+                    n.content = document.getElementById('mobile-editor').innerHTML;
+                    n.updatedAt = new Date().toISOString();
+                    saveData();
+                    document.getElementById('save-indicator').textContent = "Saved";
+                }
+            }, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

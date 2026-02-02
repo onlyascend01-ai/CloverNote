@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What's New - CloverNote</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #064e3b;
+            --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s var(--ease-out-expo), transform 1s var(--ease-out-expo);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .animate-in { animation: fadeInUp 1s var(--ease-out-expo) forwards; }
+
+        .timeline-dot { transition: all 0.5s var(--ease-out-expo); }
+        section:hover .timeline-dot { transform: scale(1.5); background-color: var(--primary); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen p-6 md:p-12">
+    <div class="max-w-3xl mx-auto bg-white rounded-[3rem] p-12 md:p-20 shadow-2xl animate-in">
+        <h1 class="text-5xl font-black mb-4 tracking-tight text-emerald-950 reveal">Release Notes</h1>
+        <p class="text-slate-500 mb-16 font-medium reveal">Tracking the evolution of your thinking space.</p>
+
+        <div class="space-y-16">
+            <section class="relative pl-8 border-l-2 border-emerald-100 reveal group">
+                <div class="timeline-dot absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-emerald-600 border-4 border-white shadow-sm"></div>
+                <div class="flex items-center gap-4 mb-4">
+                    <span class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-black uppercase">v2.1.0</span>
+                    <span class="text-xs font-bold text-slate-400">March 2026</span>
+                </div>
+                <h2 class="text-2xl font-black mb-4 text-slate-900 group-hover:text-emerald-800 transition-colors">The Typography Update</h2>
+                <ul class="space-y-3 text-slate-600 list-disc pl-5">
+                    <li class="hover:translate-x-1 transition-transform">Added <span class="font-bold">Plus Jakarta Sans</span> as the default interface font.</li>
+                    <li class="hover:translate-x-1 transition-transform">Integrated <span class="font-bold">Merriweather</span> for long-form serif writing.</li>
+                    <li class="hover:translate-x-1 transition-transform">New typography settings in the Format menu.</li>
+                    <li class="hover:translate-x-1 transition-transform">Improved line-height and letter-spacing for better readability.</li>
+                </ul>
+            </section>
+
+            <section class="relative pl-8 border-l-2 border-emerald-100 reveal group">
+                <div class="timeline-dot absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-slate-200 border-4 border-white"></div>
+                <div class="flex items-center gap-4 mb-4">
+                    <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-black uppercase">v2.0.0</span>
+                    <span class="text-xs font-bold text-slate-400">January 2026</span>
+                </div>
+                <h2 class="text-2xl font-black mb-4 text-slate-900 group-hover:text-emerald-800 transition-colors">Multi-Vault & Pro</h2>
+                <ul class="space-y-3 text-slate-600 list-disc pl-5">
+                    <li class="hover:translate-x-1 transition-transform">Launched <span class="font-bold">CloverNote Pro</span> with lifetime license options.</li>
+                    <li class="hover:translate-x-1 transition-transform">Introduced Multi-Vault management for professional organization.</li>
+                    <li class="hover:translate-x-1 transition-transform">Native PDF export engine integration.</li>
+                    <li class="hover:translate-x-1 transition-transform">Complete UI overhaul with Emerald design system.</li>
+                </ul>
+            </section>
+        </div>
+
+        <div class="mt-20 pt-12 border-t border-slate-100 flex justify-between items-center reveal">
+            <a href="index.html" class="text-xs font-black uppercase text-slate-400 hover:text-emerald-700 transition-all tracking-widest flex items-center gap-2 hover:gap-4">
+                ← Back to Home
+            </a>
+            <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Stay Updated</p>
+        </div>
+    </div>
+    <script>
+        lucide.createIcons();
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

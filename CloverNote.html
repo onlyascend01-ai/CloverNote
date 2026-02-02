@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>CloverNote Sanctuary</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --primary: #064e3b;
+        --primary-light: #0d6d53;
+        --emerald-soft: #f0fdf4;
+        --bg: #ffffff;
+        --sidebar-bg: #f9fafb;
+        --border: #f1f5f9;
+        --text: #1e293b;
+        --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+        --ease-elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+    }
+
+    * { transition: all 0.3s var(--ease-premium); }
+
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: var(--bg); color: var(--text);
+        margin: 0; padding: 0; overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .h-safe-screen { height: 100vh; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+
+    /* Animations */
+    @keyframes fadeIn { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: blur(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+    .animate-fade { animation: fadeIn 0.8s var(--ease-premium) forwards; }
+    .animate-float { animation: float 4s ease-in-out infinite; }
+
+    /* Sidebar & Items */
+    .note-item { opacity: 0; transform: translateX(-10px); border: 1px solid transparent; }
+    .note-item.rendered { opacity: 1; transform: translateX(0); }
+    .note-item:hover { background: white; border-color: #e2e8f0; transform: translateX(8px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.04); }
+    .note-item.active { background: white; border-color: var(--primary-light); box-shadow: 0 10px 30px -5px rgba(6, 78, 59, 0.08); transform: translateX(8px); }
+
+    .delete-note-btn { opacity: 0; transform: scale(0.8); transition: all 0.2s var(--ease-premium); }
+    .note-item:hover .delete-note-btn { opacity: 1; transform: scale(1); }
+
+    /* Menu & Dropdowns */
+    .menu-item { opacity: 0.7; cursor: pointer; padding: 0 14px; height: 100%; display: flex; align-items: center; font-size: 11px; font-weight: 700; }
+    .menu-item:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+
+    .dropdown-content {
+        display: none; position: absolute; top: 44px; background: white; min-width: 220px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-radius: 12px; border: 1px solid #f1f5f9;
+        z-index: 10000; overflow: hidden; transform-origin: top left;
+    }
+    .dropdown-content.show { display: block; animation: scaleIn 0.2s var(--ease-premium); }
+    .dropdown-link { padding: 12px 20px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #475569; }
+    .dropdown-link:hover { background: var(--emerald-soft); color: var(--primary); padding-left: 24px; }
+
+    /* UI Components */
+    .titlebar { height: 44px; background: var(--primary); display: flex; align-items: center; justify-content: space-between; -webkit-app-region: drag; color: white; z-index: 9999; }
+    .no-drag { -webkit-app-region: no-drag !important; }
+
+    .search-pill { background: rgba(255,255,255,0.1); border-radius: 10px; height: 28px; width: 300px; transition: all 0.3s; }
+    .search-pill:focus-within { width: 380px; background: rgba(255,255,255,0.15); }
+
+    .settings-card { background: white; border-radius: 24px; padding: 32px; border: 1px solid #f1f5f9; }
+    .settings-card:hover { transform: translateY(-4px); border-color: var(--primary-light); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05); }
+
+    /* Modals */
+    .modal-overlay {
+        position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(8px);
+        display: none; align-items: center; justify-content: center; z-index: 10000;
+        opacity: 0; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { display: flex !important; opacity: 1; }
+    .modal-content {
+        background: white; border-radius: 32px; width: 90%; max-width: 600px; padding: 32px;
+        text-align: center; box-shadow: 0 30px 60px -12px rgba(0,0,0,0.25);
+        transform: scale(0.9) translateY(20px); transition: all 0.4s var(--ease-elastic);
+        max-height: 90vh; display: flex; flex-direction: column;
+    }
+    .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
+
+    #note-title-input { font-size: 3.5rem; font-weight: 800; border: none; outline: none; background: transparent; width: 100%; letter-spacing: -0.02em; line-height: 1.1; color: var(--text); }
+    #note-title-input::placeholder { color: #cbd5e1; opacity: 1; }
+
+    #note-content-input { font-size: 1.2rem; line-height: 1.7; outline: none; min-height: 500px; color: #475569; padding-bottom: 200px; position: relative; }
+    #note-content-input:empty:before {
+        content: attr(data-placeholder);
+        color: #cbd5e1;
+        pointer-events: none;
+        display: block;
+    }
+
+    /* Content Formatting */
+    #note-content-input ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+    #note-content-input ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+    #note-content-input blockquote { border-left: 4px solid #e2e8f0; padding-left: 1rem; color: #64748b; font-style: italic; }
+
+    /* Draggable/Resizable Image Styles */
+    .editor-image-wrapper {
+        display: inline-block;
+        position: relative;
+        margin: 10px 0;
+        max-width: 100%;
+        line-height: 0;
+        user-select: none;
+    }
+    .editor-image-wrapper img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+        cursor: move;
+        transition: box-shadow 0.3s;
+    }
+    .editor-image-wrapper:hover img {
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+    .resizer {
+        width: 10px; height: 10px; background: var(--primary);
+        position: absolute; right: -5px; bottom: -5px;
+        cursor: nwse-resize; border-radius: 50%;
+        z-index: 10; opacity: 0; transition: opacity 0.2s;
+    }
+    .editor-image-wrapper:hover .resizer { opacity: 1; }
+
+    .delete-img-btn {
+        position: absolute;
+        top: 8px; right: 8px;
+        width: 24px; height: 24px;
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+        border-radius: 6px;
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; transition: all 0.2s;
+        cursor: pointer; z-index: 20;
+    }
+    .editor-image-wrapper:hover .delete-img-btn { opacity: 1; }
+
+    /* Toolbar Styling */
+    .toolbar { height: 48px; background: #fff; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; padding: 0 20px; gap: 8px; }
+    .tool-btn {
+        width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+        border-radius: 8px; color: #64748b; transition: all 0.2s; cursor: pointer;
+    }
+    .tool-btn:hover { background: #f1f5f9; color: var(--primary); }
+    .tool-btn.active { background: var(--emerald-soft); color: var(--primary); border: 1px solid rgba(6, 78, 59, 0.1); }
+    .tool-sep { width: 1px; height: 20px; background: #f1f5f9; margin: 0 4px; }
+
+    .control-btn { width: 44px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .control-btn:hover { background: rgba(255,255,255,0.1); }
+
+    .ai-pulse { animation: ai-pulse 2s infinite; }
+    @keyframes ai-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+        70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    /* AI Chat Styles */
+    #ai-chat-history {
+        flex: 1; overflow-y: auto; margin-bottom: 16px; padding: 10px;
+        text-align: left; display: flex; flex-direction: column; gap: 12px;
+    }
+    .chat-msg { padding: 12px 16px; border-radius: 16px; font-size: 14px; max-width: 85%; line-height: 1.5; }
+    .msg-user { background: var(--emerald-soft); color: var(--primary); align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg-ai { background: #f8fafc; color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #f1f5f9; }
+
+    .ai-option-pill {
+        padding: 6px 12px; border-radius: 20px; border: 1px solid #e2e8f0; font-size: 11px; font-weight: 700;
+        cursor: pointer; background: white; transition: all 0.2s;
+    }
+    .ai-option-pill:hover, .ai-option-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* Selection Popup */
+    #ai-refine-popup {
+        position: fixed; display: none; background: var(--primary); color: white;
+        padding: 8px 16px; border-radius: 12px; font-size: 11px; font-weight: 800;
+        cursor: pointer; box-shadow: 0 10px 25px rgba(6, 78, 59, 0.2);
+        z-index: 999; animation: scaleIn 0.2s var(--ease-premium);
+        text-transform: uppercase; letter-spacing: 0.05em;
+    }
+</style>
+</head>
+<body class="h-safe-screen flex flex-col bg-white">
+
+<div id="ai-refine-popup" onclick="openAIRefine()"><i data-lucide="sparkles" class="w-3 h-3 inline mr-2"></i> Ask CloverAI</div>
+
+<div class="titlebar">
+    <div class="flex items-center h-full no-drag">
+        <div class="px-4 border-r border-white/5 h-full flex items-center">
+            <img src="CloverNote.png" class="w-5 h-5 hover:rotate-[360deg] duration-1000 transition-transform">
+        </div>
+        <div class="flex h-full">
+            <div class="relative h-full">
+                <div class="menu-item" onclick="toggleDropdown(event, 'file-drop')">File</div>
+                <div id="file-drop" class="dropdown-content text-slate-900">
+                    <div class="dropdown-link" onclick="createNote()"><span>New Note</span><i data-lucide="plus"></i></div>
+                    <div class="dropdown-link" onclick="importFile()"><span>Import</span><i data-lucide="file-up"></i></div>
+                    <div class="dropdown-link" onclick="save()"><span>Save</span><i data-lucide="save"></i></div>
+                    <div class="dropdown-link" onclick="exportPDF()"><span>Export PDF</span><i data-lucide="file-down"></i></div>
+                    <div class="h-px bg-slate-100 my-1 mx-2"></div>
+                    <div class="dropdown-link" onclick="window.electronAPI.close()"><span>Exit</span><i data-lucide="log-out"></i></div>
+                </div>
+            </div>
+            <div class="relative h-full">
+                <div class="menu-item" onclick="toggleDropdown(event, 'format-drop')">Format</div>
+                <div id="format-drop" class="dropdown-content text-slate-900">
+                    <div class="dropdown-link" onclick="setFont('Plus Jakarta Sans')"><span>Jakarta Sans</span><i data-lucide="type"></i></div>
+                    <div class="dropdown-link" onclick="setFont('Merriweather')"><span>Merriweather</span><i data-lucide="type"></i></div>
+                    <div class="dropdown-link" onclick="setFont('JetBrains Mono')"><span>JetBrains Mono</span><i data-lucide="terminal"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="search-pill no-drag flex items-center px-3 h-7">
+        <i data-lucide="search" class="w-3 h-3 opacity-40 mr-2 text-white"></i>
+        <input type="text" placeholder="Search sanctuary..." class="bg-transparent border-none outline-none text-[11px] text-white w-full placeholder:text-white/30" oninput="filterNotes(this.value)">
+    </div>
+    <div class="flex h-full items-center no-drag px-1">
+        <div class="control-btn" onclick="window.electronAPI.minimize()"><i data-lucide="minus" class="w-4 h-4"></i></div>
+        <div class="control-btn" onclick="window.electronAPI.maximize()"><i data-lucide="square" class="w-3 h-3"></i></div>
+        <div class="control-btn hover:!bg-red-500" onclick="window.electronAPI.close()"><i data-lucide="x" class="w-4 h-4"></i></div>
+    </div>
+</div>
+
+<div class="flex-1 flex overflow-hidden">
+    <aside id="sidebar-panel" class="w-80 border-r border-slate-100 bg-[#f9fafb] flex flex-col transition-all duration-500">
+        <div class="p-6 space-y-3 no-drag">
+            <button onclick="createNote()" class="w-full bg-[#064e3b] text-white py-4 rounded-2xl font-bold text-sm shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> New Sanctuary
+            </button>
+            <button onclick="toggleAIModal()" class="w-full bg-emerald-50 text-emerald-900 border-2 border-emerald-100 py-4 rounded-2xl font-bold text-sm shadow-sm hover:bg-emerald-100 transition-all flex items-center justify-center gap-2 ai-pulse">
+                <i data-lucide="sparkles" class="w-4 h-4"></i> CloverAI Agent
+            </button>
+        </div>
+        <div id="notes-list" class="flex-1 overflow-y-auto px-4 space-y-1 pb-10 no-drag"></div>
+        <div class="p-6 border-t border-slate-100 bg-white/50 space-y-2 no-drag">
+            <button onclick="showView('settings')" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white text-slate-600 text-sm font-bold transition-all">
+                <i data-lucide="settings" class="w-4 h-4 text-emerald-600"></i> Preferences
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col bg-white relative overflow-hidden">
+        <!-- Empty State -->
+        <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-center p-20 animate-fade">
+            <div class="w-32 h-32 bg-emerald-50 rounded-full flex items-center justify-center mb-10 animate-float">
+                <img src="CloverNote.png" class="w-16 h-16 opacity-20 filter grayscale">
+            </div>
+            <h2 class="text-4xl font-black text-slate-900 tracking-tighter mb-8">Sanctuary is silent.</h2>
+            <button onclick="createNote()" class="no-drag px-8 py-4 bg-emerald-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-all">Start Writing</button>
+        </div>
+
+        <!-- Editor View -->
+        <div id="editor-view" class="flex-1 flex flex-col overflow-hidden hidden animate-fade">
+            <div class="toolbar no-drag">
+                <div id="btn-bold" class="tool-btn" title="Bold" onmousedown="event.preventDefault(); execCommand('bold')"><i data-lucide="bold" class="w-4 h-4"></i></div>
+                <div id="btn-italic" class="tool-btn" title="Italic" onmousedown="event.preventDefault(); execCommand('italic')"><i data-lucide="italic" class="w-4 h-4"></i></div>
+                <div id="btn-underline" class="tool-btn" title="Underline" onmousedown="event.preventDefault(); execCommand('underline')"><i data-lucide="underline" class="w-4 h-4"></i></div>
+                <div class="tool-sep"></div>
+                <div id="btn-list" class="tool-btn" title="Bullet List" onmousedown="event.preventDefault(); execCommand('insertUnorderedList')"><i data-lucide="list" class="w-4 h-4"></i></div>
+                <div id="btn-ordered" class="tool-btn" title="Numbered List" onmousedown="event.preventDefault(); execCommand('insertOrderedList')"><i data-lucide="list-ordered" class="w-4 h-4"></i></div>
+                <div class="tool-sep"></div>
+                <div id="btn-left" class="tool-btn" title="Left Align" onmousedown="event.preventDefault(); execCommand('justifyLeft')"><i data-lucide="align-left" class="w-4 h-4"></i></div>
+                <div id="btn-right" class="tool-btn" title="Right Align" onmousedown="event.preventDefault(); execCommand('justifyRight')"><i data-lucide="align-right" class="w-4 h-4"></i></div>
+                <div class="tool-sep"></div>
+                <div class="tool-btn" title="Image" onclick="insertImage()"><i data-lucide="image" class="w-4 h-4"></i></div>
+                <div class="tool-sep"></div>
+                <div class="flex items-center gap-2 bg-slate-50/50 px-3 py-1.5 rounded-xl border border-slate-100">
+                    <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Title</span>
+                    <div class="tool-btn !w-6 !h-6 hover:bg-white" title="Smaller Title" onclick="adjustTitleFontSize(-0.2)"><i data-lucide="minus" class="w-3 h-3"></i></div>
+                    <div class="tool-btn !w-6 !h-6 hover:bg-white" title="Larger Title" onclick="adjustTitleFontSize(0.2)"><i data-lucide="plus" class="w-3 h-3"></i></div>
+                </div>
+                <div class="flex-1"></div>
+                <div id="save-status" class="flex items-center gap-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest">
+                    <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div> Vault Active
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto no-drag" id="editor-container">
+                <div class="max-w-4xl mx-auto w-full py-24 px-12">
+                    <textarea id="note-title-input" placeholder="Untitled Sanctuary" class="no-drag h-auto overflow-hidden resize-none" rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                    <div id="note-content-input" contenteditable="true" data-placeholder="Start typing..." class="mt-8 outline-none no-drag"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="settings-view" class="flex-1 overflow-y-auto p-16 hidden bg-[#fafbfb] animate-fade">
+            <div class="max-w-2xl mx-auto space-y-8 no-drag">
+                <div class="flex items-center justify-between mb-12">
+                    <h2 class="text-5xl font-black tracking-tighter">Preferences</h2>
+                    <button onclick="showView('editor')" class="p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all"><i data-lucide="x" class="w-6 h-6 text-slate-400"></i></button>
+                </div>
+                <section class="settings-card">
+                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6 flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-emerald-500"></i> Gemini AI Configuration</h3>
+                    <div class="relative">
+                        <input type="password" id="gemini-key-input" placeholder="Enter Gemini API Key" class="no-drag w-full p-5 bg-slate-50 rounded-2xl border border-slate-100 outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 mb-2 transition-all">
+                        <div id="key-save-badge" class="absolute right-4 top-1/2 -translate-y-1/2 px-3 py-1 bg-emerald-500 text-white text-[9px] font-black uppercase rounded-lg opacity-0 transition-opacity pointer-events-none">Saved</div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 font-medium">Your key is stored locally. Press <b>Enter</b> to save and confirm.</p>
+                </section>
+                <section class="settings-card border-red-50">
+                    <button onclick="confirmWipe()" class="w-full p-5 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Wipe Local Vault
+                    </button>
+                </section>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- AI Modal -->
+<div id="ai-modal" class="modal-overlay">
+    <div class="modal-content animate-modal no-drag">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner"><i data-lucide="sparkles" class="w-6 h-6"></i></div>
+                <div class="text-left">
+                    <h3 class="text-xl font-black leading-tight">CloverAI Agent</h3>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Powered by Gemini AI</p>
+                </div>
+            </div>
+            <button onclick="toggleAIModal()" class="p-2 hover:bg-slate-50 rounded-xl transition-all"><i data-lucide="x" class="w-5 h-5 text-slate-400"></i></button>
+        </div>
+
+        <div id="ai-chat-history">
+            <!-- Messages will appear here -->
+            <div class="chat-msg msg-ai animate-fade">Hello! I'm CloverAI. How can I assist your writing today?</div>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-4 justify-center">
+            <div id="intent-general" class="ai-option-pill active" onclick="setAIIntent('general', this)">General Chat</div>
+            <div id="intent-essay" class="ai-option-pill" onclick="setAIIntent('essay', this)">Write Essay</div>
+            <div id="intent-sentence" class="ai-option-pill" onclick="setAIIntent('sentence', this)">Refine Sentence</div>
+            <div id="intent-expand" class="ai-option-pill" onclick="setAIIntent('expand', this)">Expand Note</div>
+        </div>
+
+        <div class="space-y-4 text-left relative">
+            <textarea id="ai-prompt" placeholder="e.g. Write a detailed analysis..." class="no-drag w-full p-5 bg-slate-50 rounded-2xl outline-none font-medium text-sm focus:ring-4 focus:ring-emerald-500/5 transition-all min-h-[100px] resize-none"></textarea>
+
+            <div id="ai-actions" class="hidden flex gap-2 animate-fade">
+                <button id="ai-btn-create" onclick="confirmAIResult()" class="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-emerald-700 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i> Create New Note
+                </button>
+                <button id="ai-btn-append" onclick="appendToNote()" class="flex-1 py-4 bg-white border border-slate-200 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Add to Current
+                </button>
+                <button id="ai-btn-apply" onclick="applyRefinement()" class="hidden flex-1 py-4 bg-emerald-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-emerald-950 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="wand-2" class="w-4 h-4"></i> Apply Change
+                </button>
+                <button onclick="clearAIChat()" class="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-100 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </div>
+
+            <button id="ai-generate-btn" onclick="generateAINote()" class="w-full py-5 bg-[#064e3b] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all flex items-center justify-center gap-3">
+                <i data-lucide="zap" class="w-4 h-4"></i> Send Message (Enter)
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let notes = [];
+let activeNoteId = null;
+let aiIntent = 'general';
+let lastAIResponse = '';
+let selectedText = '';
+let selectionRange = null;
+
+function init() {
+    loadNotes();
+    selectNote(activeNoteId);
+    lucide.createIcons();
+
+    // Selection detection for "Ask CloverAI" popup
+    const editor = document.getElementById('note-content-input');
+    const popup = document.getElementById('ai-refine-popup');
+
+    editor.addEventListener('mouseup', handleSelection);
+    editor.addEventListener('keyup', handleSelection);
+    document.addEventListener('selectionchange', updateToolbarState);
+
+    function handleSelection() {
+        const selection = window.getSelection();
+        const text = selection.toString().trim();
+
+        if (text.length > 0 && selection.anchorNode && (editor.contains(selection.anchorNode) || editor === selection.anchorNode)) {
+            selectedText = text;
+            const range = selection.getRangeAt(0);
+            selectionRange = range.cloneRange();
+            const rect = range.getBoundingClientRect();
+
+            popup.style.display = 'block';
+            popup.style.top = (rect.top - 40) + 'px';
+            popup.style.left = (rect.left + (rect.width / 2) - 60) + 'px';
+        } else {
+            popup.style.display = 'none';
+        }
+    }
+
+    document.addEventListener('mousedown', (e) => {
+        if (!popup.contains(e.target) && e.target !== editor) {
+            popup.style.display = 'none';
+        }
+    });
+
+    // API KEY INPUT LOGIC
+    const geminiInput = document.getElementById('gemini-key-input');
+    geminiInput.value = localStorage.getItem('gemini-api-key') || '';
+
+    geminiInput.addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        localStorage.setItem('gemini-api-key', val);
+        const badge = document.getElementById('key-save-badge');
+        if (val.length > 5) { badge.style.opacity = '1'; setTimeout(() => badge.style.opacity = '0', 1000); }
+    });
+
+    geminiInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            e.target.blur();
+            showView('editor');
+        }
+    });
+
+    // AI PROMPT LOGIC
+    const aiPrompt = document.getElementById('ai-prompt');
+    aiPrompt.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            generateAINote();
+        }
+    });
+
+    document.getElementById('note-title-input').addEventListener('input', (e) => {
+        updateNote('title', e.target.value);
+    });
+    document.getElementById('note-content-input').addEventListener('input', (e) => {
+        updateNote('content', e.target.innerHTML);
+        updateToolbarState();
+    });
+
+    // Image interactions support
+    setupImageInteractions();
+
+    editor.addEventListener('click', (e) => {
+        if (e.target.closest('.delete-img-btn')) {
+            e.target.closest('.editor-image-wrapper').remove();
+            updateNote('content', editor.innerHTML);
+        }
+    });
+}
+
+function setupImageInteractions() {
+    const editor = document.getElementById('note-content-input');
+
+    editor.addEventListener('mousedown', (e) => {
+        const wrapper = e.target.closest('.editor-image-wrapper');
+        if (!wrapper) return;
+
+        if (e.target.classList.contains('resizer')) {
+            e.preventDefault();
+            const img = wrapper.querySelector('img');
+            const startX = e.clientX;
+            const startWidth = img.offsetWidth;
+
+            const onMouseMove = (moveEvent) => {
+                const newWidth = startWidth + (moveEvent.clientX - startX);
+                img.style.width = newWidth + 'px';
+            };
+
+            const onMouseUp = () => {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                updateNote('content', editor.innerHTML);
+            };
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        } else if (e.target.tagName === 'IMG') {
+            e.preventDefault();
+
+            const editorRect = editor.getBoundingClientRect();
+            if (wrapper.style.position !== 'absolute') {
+                const rect = wrapper.getBoundingClientRect();
+                wrapper.style.left = (rect.left - editorRect.left) + 'px';
+                wrapper.style.top = (rect.top - editorRect.top + editor.scrollTop) + 'px';
+                wrapper.style.position = 'absolute';
+                wrapper.style.margin = '0';
+                wrapper.style.zIndex = '1000';
+            }
+
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const initialLeft = parseFloat(wrapper.style.left);
+            const initialTop = parseFloat(wrapper.style.top);
+
+            const onMouseMove = (moveEvent) => {
+                const dx = moveEvent.clientX - startX;
+                const dy = moveEvent.clientY - startY;
+                wrapper.style.left = (initialLeft + dx) + 'px';
+                wrapper.style.top = (initialTop + dy) + 'px';
+            };
+
+            const onMouseUp = () => {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                updateNote('content', editor.innerHTML);
+            };
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+    });
+}
+
+function updateToolbarState() {
+    const states = {
+        'bold': document.queryCommandState('bold'),
+        'italic': document.queryCommandState('italic'),
+        'underline': document.queryCommandState('underline'),
+        'insertUnorderedList': document.queryCommandState('insertUnorderedList'),
+        'insertOrderedList': document.queryCommandState('insertOrderedList'),
+        'justifyLeft': document.queryCommandState('justifyLeft'),
+        'justifyRight': document.queryCommandState('justifyRight')
+    };
+
+    const boldBtn = document.getElementById('btn-bold');
+    const italicBtn = document.getElementById('btn-italic');
+    const underlineBtn = document.getElementById('btn-underline');
+    const listBtn = document.getElementById('btn-list');
+    const orderedBtn = document.getElementById('btn-ordered');
+    const leftBtn = document.getElementById('btn-left');
+    const rightBtn = document.getElementById('btn-right');
+
+    if(boldBtn) boldBtn.classList.toggle('active', states.bold);
+    if(italicBtn) italicBtn.classList.toggle('active', states.italic);
+    if(underlineBtn) underlineBtn.classList.toggle('active', states.underline);
+    if(listBtn) listBtn.classList.toggle('active', states.insertUnorderedList);
+    if(orderedBtn) orderedBtn.classList.toggle('active', states.insertOrderedList);
+    if(leftBtn) leftBtn.classList.toggle('active', states.justifyLeft);
+    if(rightBtn) rightBtn.classList.toggle('active', states.justifyRight);
+}
+
+function openAIRefine() {
+    toggleAIModal();
+    setAIIntent('sentence', document.getElementById('intent-sentence'));
+    document.getElementById('ai-prompt').placeholder = "How should I refine this selected text?";
+    document.getElementById('ai-prompt').focus();
+    document.getElementById('ai-refine-popup').style.display = 'none';
+    addChatMessage('ai', `I see you've selected: "<i>${selectedText}</i>". How can I improve it for you?`);
+}
+
+function loadNotes() {
+    const data = localStorage.getItem('clover-notes');
+    notes = data ? JSON.parse(data) : [];
+    const lastId = localStorage.getItem('clover-active-note-id');
+    if (lastId && notes.some(n => n.id === lastId)) {
+        activeNoteId = lastId;
+    } else if (notes.length > 0) {
+        activeNoteId = notes[0].id;
+    }
+}
+
+function save() {
+    localStorage.setItem('clover-notes', JSON.stringify(notes));
+    if (activeNoteId) localStorage.setItem('clover-active-note-id', activeNoteId);
+    const status = document.getElementById('save-status');
+    if(status) status.innerHTML = '<div class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div> Vault Saved';
+    lucide.createIcons();
+}
+
+function createNote(title = '', content = '') {
+    const n = { id: Date.now().toString(), title: title, content: content, date: new Date().toLocaleDateString(), titleFontSize: 3.5 };
+    notes.unshift(n);
+    activeNoteId = n.id;
+    save(); renderList(); showView('editor');
+    const titleInput = document.getElementById('note-title-input');
+    titleInput.value = n.title;
+    titleInput.style.fontSize = n.titleFontSize + 'rem';
+    titleInput.style.height = ''; titleInput.style.height = titleInput.scrollHeight + 'px';
+    document.getElementById('note-content-input').innerHTML = n.content;
+}
+
+function updateNote(field, val) {
+    const n = notes.find(x => x.id === activeNoteId);
+    if (n) { n[field] = val; save(); renderList(); }
+}
+
+function adjustTitleFontSize(delta) {
+    const n = notes.find(x => x.id === activeNoteId);
+    if (!n) return;
+    if (!n.titleFontSize) n.titleFontSize = 3.5;
+    n.titleFontSize += delta;
+    if (n.titleFontSize < 1) n.titleFontSize = 1;
+    if (n.titleFontSize > 6) n.titleFontSize = 6;
+    const titleInput = document.getElementById('note-title-input');
+    titleInput.style.fontSize = n.titleFontSize + 'rem';
+    titleInput.style.height = ''; titleInput.style.height = titleInput.scrollHeight + 'px';
+    save();
+}
+
+function deleteCurrentNote() {
+    notes = notes.filter(x => x.id !== activeNoteId);
+    activeNoteId = notes.length > 0 ? notes[0].id : null;
+    save();
+    if (!activeNoteId) {
+        document.getElementById('note-title-input').value = '';
+        document.getElementById('note-content-input').innerHTML = '';
+        showView('editor');
+    } else {
+        selectNote(activeNoteId);
+    }
+    renderList();
+}
+
+function selectNote(id) {
+    activeNoteId = id;
+    if (!id) {
+        document.getElementById('note-title-input').value = '';
+        document.getElementById('note-content-input').innerHTML = '';
+        showView('editor');
+        renderList();
+        return;
+    }
+    const n = notes.find(x => x.id === id);
+    if (n) {
+        const titleInput = document.getElementById('note-title-input');
+        titleInput.value = n.title || '';
+        titleInput.style.fontSize = (n.titleFontSize || 3.5) + 'rem';
+        setTimeout(() => { titleInput.style.height = ''; titleInput.style.height = titleInput.scrollHeight + 'px'; }, 0);
+        document.getElementById('note-content-input').innerHTML = n.content || '';
+    }
+    showView('editor');
+    renderList();
+    save(); // Save last opened note ID
+}
+
+function renderList() {
+    const list = document.getElementById('notes-list');
+    list.innerHTML = notes.map(n => `
+        <div onclick="selectNote('${n.id}')" class="note-item rendered p-5 rounded-2xl cursor-pointer transition-all ${n.id === activeNoteId ? 'active' : ''}">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600/50">${n.date}</span>
+                <button onclick="event.stopPropagation(); deleteNote('${n.id}')" class="delete-note-btn p-1 text-slate-300 hover:text-red-500"><i data-lucide="x" class="w-3 h-3"></i></button>
+            </div>
+            <h4 class="font-bold text-slate-900 truncate text-sm">${n.title || 'Untitled'}</h4>
+        </div>
+    `).join('');
+    lucide.createIcons();
+}
+
+function deleteNote(id) {
+    notes = notes.filter(x => x.id !== id);
+    if (activeNoteId === id) {
+        activeNoteId = notes.length > 0 ? notes[0].id : null;
+        selectNote(activeNoteId);
+    }
+    save(); renderList();
+}
+
+function filterNotes(query) {
+    const q = query.toLowerCase();
+    const items = document.querySelectorAll('.note-item');
+    items.forEach((item, i) => {
+        const text = ((notes[i].title || '') + (notes[i].content || '')).toLowerCase();
+        item.style.display = text.includes(q) ? 'block' : 'none';
+    });
+}
+
+function showView(v) {
+    document.getElementById('empty-state').classList.add('hidden');
+    document.getElementById('editor-view').classList.add('hidden');
+    document.getElementById('settings-view').classList.add('hidden');
+    if (v === 'editor') {
+        if (notes.length === 0) document.getElementById('empty-state').classList.remove('hidden');
+        else document.getElementById('editor-view').classList.remove('hidden');
+    } else {
+        document.getElementById(v + '-view').classList.remove('hidden');
+    }
+}
+
+function toggleDropdown(e, id) {
+    e.stopPropagation();
+    document.querySelectorAll('.dropdown-content').forEach(d => { if(d.id !== id) d.classList.remove('show'); });
+    document.getElementById(id).classList.toggle('show');
+}
+
+function setFont(f) {
+    document.getElementById('note-content-input').style.fontFamily = f;
+}
+
+function toggleAIModal() {
+    document.getElementById('ai-modal').classList.toggle('active');
+    if (document.getElementById('ai-modal').classList.contains('active')) {
+        document.getElementById('ai-prompt').focus();
+    }
+}
+
+function setAIIntent(intent, el) {
+    aiIntent = intent;
+    document.querySelectorAll('.ai-option-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+
+    document.getElementById('ai-actions').classList.add('hidden');
+}
+
+function addChatMessage(role, text) {
+    const history = document.getElementById('ai-chat-history');
+    const msg = document.createElement('div');
+    msg.className = `chat-msg msg-${role} animate-fade`;
+    msg.innerHTML = text;
+    history.appendChild(msg);
+    history.scrollTop = history.scrollHeight;
+    lucide.createIcons();
+}
+
+function clearAIChat() {
+    document.getElementById('ai-chat-history').innerHTML = '<div class="chat-msg msg-ai animate-fade">Chat cleared. How else can I help?</div>';
+    document.getElementById('ai-actions').classList.add('hidden');
+    lastAIResponse = '';
+    selectedText = '';
+    selectionRange = null;
+}
+
+function confirmAIResult() {
+    if (!lastAIResponse) return;
+    const lines = lastAIResponse.split('\n').map(l => l.replace(/[#*]/g, '').trim()).filter(l => l.length > 0);
+    let aiTitle = lines[0] || "CloverAI Insight";
+    if (aiTitle.length > 100) aiTitle = aiTitle.substring(0, 97) + "...";
+    createNote(aiTitle, lastAIResponse);
+    toggleAIModal();
+    clearAIChat();
+}
+
+function appendToNote() {
+    if (!lastAIResponse || !activeNoteId) return;
+    const editor = document.getElementById('note-content-input');
+    editor.innerHTML += `<br><br>--- CloverAI Contribution ---<br>${lastAIResponse}`;
+    updateNote('content', editor.innerHTML);
+    toggleAIModal();
+    clearAIChat();
+}
+
+function applyRefinement() {
+    if (!lastAIResponse || !activeNoteId) return;
+    const editor = document.getElementById('note-content-input');
+
+    if (selectionRange && selectedText) {
+        selectionRange.deleteContents();
+        const newNode = document.createElement('span');
+        newNode.innerHTML = lastAIResponse;
+        selectionRange.insertNode(newNode);
+        const html = editor.innerHTML;
+        editor.innerHTML = html.replace(/<span>(.*?)<\/span>/g, '$1');
+    } else {
+        editor.innerHTML = lastAIResponse;
+    }
+
+    updateNote('content', editor.innerHTML);
+    toggleAIModal();
+    clearAIChat();
+}
+
+function execCommand(command, value = null) {
+    document.execCommand(command, false, value);
+    const editor = document.getElementById('note-content-input');
+    editor.focus();
+    updateNote('content', editor.innerHTML);
+    updateToolbarState();
+}
+
+async function insertImage() {
+    const imgData = await window.electronAPI.pickImage();
+    if (imgData) {
+        const wrapper = document.createElement('span');
+        wrapper.className = 'editor-image-wrapper';
+        wrapper.contentEditable = 'false';
+
+        const img = document.createElement('img');
+        img.src = imgData;
+        img.style.width = '300px';
+
+        const resizer = document.createElement('div');
+        resizer.className = 'resizer';
+
+        const delBtn = document.createElement('div');
+        delBtn.className = 'delete-img-btn';
+        delBtn.innerHTML = '<i data-lucide="trash-2" class="w-3 h-3"></i>';
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(resizer);
+        wrapper.appendChild(delBtn);
+
+        const editor = document.getElementById('note-content-input');
+        editor.focus();
+
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0 && editor.contains(selection.anchorNode)) {
+            const range = selection.getRangeAt(0);
+            range.insertNode(wrapper);
+            range.collapse(false);
+        } else {
+            editor.appendChild(wrapper);
+        }
+
+        updateNote('content', editor.innerHTML);
+        lucide.createIcons();
+    }
+}
+
+async function generateAINote() {
+    const promptField = document.getElementById('ai-prompt');
+    const prompt = promptField.value;
+    const apiKey = localStorage.getItem('gemini-api-key');
+    const btn = document.getElementById('ai-generate-btn');
+
+    if (!apiKey) { alert("Please set your Gemini API Key in Preferences first."); return; }
+    if (!prompt) return;
+
+    addChatMessage('user', prompt);
+    promptField.value = '';
+
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Processing...';
+    lucide.createIcons();
+
+    try {
+        let finalPrompt = prompt;
+        if (aiIntent === 'essay') {
+            finalPrompt = `Write a detailed essay about: ${prompt}`;
+        } else if (aiIntent === 'sentence') {
+            const context = selectedText || document.getElementById('note-content-input').innerText;
+            finalPrompt = `Refine this text and make it professional. Focus on this part: "${context}". User instruction: ${prompt}`;
+        } else if (aiIntent === 'expand' && activeNoteId) {
+            const context = selectedText || document.getElementById('note-content-input').innerText;
+            finalPrompt = `Based on this text: "${context.substring(0, 2000)}", expand on this thought: ${prompt}`;
+        }
+
+        const response = await window.electronAPI.generateAIContent(finalPrompt, apiKey);
+        lastAIResponse = response;
+
+        addChatMessage('ai', response);
+
+        const actions = document.getElementById('ai-actions');
+        const btnCreate = document.getElementById('ai-btn-create');
+        const btnAppend = document.getElementById('ai-btn-append');
+        const btnApply = document.getElementById('ai-btn-apply');
+
+        if (aiIntent === 'general') {
+            actions.classList.add('hidden');
+        } else {
+            actions.classList.remove('hidden');
+            if (aiIntent === 'essay') {
+                btnCreate.classList.remove('hidden');
+                btnAppend.classList.remove('hidden');
+                btnApply.classList.add('hidden');
+            } else if (aiIntent === 'sentence') {
+                btnCreate.classList.remove('hidden');
+                btnAppend.classList.add('hidden');
+                btnApply.classList.remove('hidden');
+            } else if (aiIntent === 'expand') {
+                btnCreate.classList.remove('hidden');
+                btnAppend.classList.remove('hidden');
+                btnApply.classList.add('hidden');
+            }
+        }
+    } catch (err) {
+        addChatMessage('ai', `<span class="text-red-500 font-bold">Error:</span> ${err.message}`);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="zap" class="w-4 h-4"></i> Send Message (Enter)';
+        lucide.createIcons();
+    }
+}
+
+async function exportPDF() {
+    const n = notes.find(x => x.id === activeNoteId);
+    if (n) await window.electronAPI.exportPDF(n.title);
+}
+
+async function importFile() {
+    const file = await window.electronAPI.readFile();
+    if (file) createNote(file.name, file.content);
+}
+
+function confirmWipe() {
+    if (confirm("Are you sure you want to wipe your local vault? This cannot be undone.")) {
+        window.electronAPI.wipeVault().then(() => {
+            notes = []; activeNoteId = null;
+            localStorage.removeItem('clover-notes');
+            renderList(); showView('editor');
+        });
+    }
+}
+
+window.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+});
+
+init();
+</script>
+</body>
+</html>

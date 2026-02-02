@@ -1,0 +1,20 @@
+{
+  "name": "cloverdrive",
+  "productName": "CloverDrive",
+  "version": "1.0.0",
+  "description": "Premium native local-first drive experience",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "author": "jdndu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "electron-updater": "^6.7.3"
+  }
+}

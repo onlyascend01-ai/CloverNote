@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - CloverNote</title>
+    <link rel="icon" type="image/png" href="CloverNote.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #064e3b;
+            --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s var(--ease-out-expo), transform 1s var(--ease-out-expo);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .animate-in { animation: fadeInUp 1s var(--ease-out-expo) forwards; }
+        .sidebar-animate { animation: slideInLeft 1s var(--ease-out-expo) forwards; }
+
+        .doc-card { transition: all 0.4s var(--ease-out-expo); }
+        .doc-card:hover { transform: translateY(-8px) scale(1.02); border-color: #10b981; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05); }
+
+        aside a { transition: all 0.3s; }
+        aside a:hover { padding-left: 8px; color: var(--primary); }
+
+        section { transition: all 0.5s; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 leading-relaxed selection:bg-emerald-100 selection:text-emerald-900">
+    <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 h-16 flex items-center animate-fade-in">
+        <div class="max-w-6xl mx-auto px-6 w-full flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <div class="w-8 h-8 bg-emerald-900 rounded-lg flex items-center justify-center shadow-sm transition-transform group-hover:rotate-12">
+                    <img src="CloverNote.png" alt="Logo" class="w-5 h-5">
+                </div>
+                <span class="text-lg font-extrabold tracking-tight text-emerald-900">CloverNote</span>
+            </a>
+            <a href="index.html" class="text-xs font-bold text-slate-500 hover:text-emerald-900 transition-all hover:scale-105 uppercase tracking-wider">Back to Home</a>
+        </div>
+    </nav>
+
+    <main class="pt-32 pb-24 px-6 max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-12">
+            <!-- Sidebar -->
+            <aside class="hidden lg:block space-y-8 sticky top-32 h-fit sidebar-animate">
+                <div>
+                    <h5 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4">Getting Started</h5>
+                    <ul class="space-y-3 font-bold text-sm text-slate-600">
+                        <li><a href="#install">Installation</a></li>
+                        <li><a href="#first-note">Your First Note</a></li>
+                        <li><a href="#shortcuts">Keyboard Shortcuts</a></li>
+                        <li><a href="#platforms">Multi-Platform</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4">Advanced Features</h5>
+                    <ul class="space-y-3 font-bold text-sm text-slate-600">
+                        <li><a href="#vault">Vault Security</a></li>
+                        <li><a href="#search">Search & Organization</a></li>
+                        <li><a href="#cloverdrive">CloverDrive</a></li>
+                        <li><a href="#export">Import & Export</a></li>
+                        <li><a href="#premium">Premium Features</a></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Content -->
+            <div class="lg:col-span-3 space-y-20 animate-in">
+                <section id="install" class="reveal">
+                    <h1 class="text-4xl font-black text-slate-900 tracking-tight mb-6">Installation Guide</h1>
+                    <p class="text-lg text-slate-600 mb-8">CloverNote is a native Windows application. Follow these steps to get set up.</p>
+                    <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-all duration-500">
+                        <div class="flex gap-4 group">
+                            <span class="w-8 h-8 bg-emerald-900 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 group-hover:scale-110 transition-transform">1</span>
+                            <p class="font-bold">Download the <code class="bg-slate-100 px-2 py-1 rounded text-emerald-700">.exe</code> installer from the home page.</p>
+                        </div>
+                        <div class="flex gap-4 group">
+                            <span class="w-8 h-8 bg-emerald-900 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 group-hover:scale-110 transition-transform">2</span>
+                            <p class="font-bold">Run the installer. Windows might show a "SmartScreen" warning—click "More Info" and then "Run Anyway".</p>
+                        </div>
+                        <div class="flex gap-4 group">
+                            <span class="w-8 h-8 bg-emerald-900 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 group-hover:scale-110 transition-transform">3</span>
+                            <p class="font-bold">The app will launch automatically once installed.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="vault" class="reveal">
+                    <h2 class="text-3xl font-black text-slate-900 tracking-tight mb-6">How the Vault Works</h2>
+                    <p class="text-slate-600 mb-8">Unlike cloud-based notepads, CloverNote stores everything in a "Local Vault" on your hard drive.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="doc-card p-6 bg-white rounded-2xl border border-slate-200 shadow-sm group">
+                            <i data-lucide="database" class="w-6 h-6 text-emerald-600 mb-4 transition-transform group-hover:scale-110"></i>
+                            <h4 class="font-bold mb-2">Data Location</h4>
+                            <p class="text-xs text-slate-500">Your notes are stored in your AppData folder. They are encrypted if you have set an account password.</p>
+                        </div>
+                        <div class="doc-card p-6 bg-white rounded-2xl border border-slate-200 shadow-sm group">
+                            <i data-lucide="refresh-cw" class="w-6 h-6 text-blue-600 mb-4 transition-transform group-hover:rotate-180 duration-700"></i>
+                            <h4 class="font-bold mb-2">No Cloud Sync</h4>
+                            <p class="text-xs text-slate-500">We do not sync to servers. This means your data is 100% private, but you are responsible for backups.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="platforms" class="reveal">
+                    <h2 class="text-3xl font-black text-slate-900 tracking-tight mb-6">Multi-Platform Support</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="doc-card p-6 bg-white rounded-2xl border border-slate-200 shadow-sm group">
+                            <i data-lucide="monitor" class="w-6 h-6 text-emerald-600 mb-4 group-hover:scale-110 transition-transform"></i>
+                            <h4 class="font-bold mb-2 text-sm">Desktop</h4>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Windows</p>
+                        </div>
+                        <div class="doc-card p-6 bg-white rounded-2xl border border-slate-200 shadow-sm group">
+                            <i data-lucide="smartphone" class="w-6 h-6 text-blue-600 mb-4 group-hover:scale-110 transition-transform"></i>
+                            <h4 class="font-bold mb-2 text-sm">Mobile</h4>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Android</p>
+                        </div>
+                        <div class="doc-card p-6 bg-white rounded-2xl border border-slate-200 shadow-sm group">
+                            <i data-lucide="tablet" class="w-6 h-6 text-purple-600 mb-4 group-hover:scale-110 transition-transform"></i>
+                            <h4 class="font-bold mb-2 text-sm">Tablet</h4>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Native Layout</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="shortcuts" class="reveal">
+                    <h2 class="text-3xl font-black text-slate-900 tracking-tight mb-6">Keyboard Shortcuts</h2>
+                    <div class="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm transition-all duration-500 hover:shadow-lg">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200">
+                                    <th class="p-4 font-black text-[10px] uppercase tracking-widest text-slate-400">Action</th>
+                                    <th class="p-4 font-black text-[10px] uppercase tracking-widest text-slate-400">Shortcut</th>
+                                </tr>
+                            </thead>
+                            <tbody class="font-bold text-sm">
+                                <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                    <td class="p-4">New Note</td>
+                                    <td class="p-4"><kbd class="bg-slate-100 px-2 py-1 rounded border border-slate-300 shadow-sm">Ctrl + N</kbd></td>
+                                </tr>
+                                <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                    <td class="p-4">Save Note</td>
+                                    <td class="p-4"><kbd class="bg-slate-100 px-2 py-1 rounded border border-slate-300 shadow-sm">Ctrl + S</kbd></td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="p-4">Toggle Sidebar</td>
+                                    <td class="p-4"><kbd class="bg-slate-100 px-2 py-1 rounded border border-slate-300 shadow-sm">Ctrl + B</kbd></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-12 bg-white border-t border-slate-100 text-center reveal">
+        <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em]">© 2026 CloverNote Documentation</p>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

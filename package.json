@@ -1,0 +1,98 @@
+{
+  "name": "clovernote",
+  "productName": "CloverNote",
+  "version": "2.1.0",
+  "description": "A premium native notepad experience",
+  "author": "jdndu <contact@clovernote.com>",
+  "homepage": "https://github.com/jdndu/CloverNote",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish=never",
+    "dist-clean": "rimraf dist && electron-builder",
+    "dist-all": "electron-builder -wml --publish=never"
+  },
+  "build": {
+    "appId": "com.clovernote.app",
+    "directories": {
+      "output": "build-v2"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "jdndu",
+        "repo": "CloverNote"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "CloverNote.png",
+      "artifactName": "${productName}_Setup_${version}.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "CloverNote.png",
+      "category": "public.app-category.utilities"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "CloverNote.png",
+      "category": "Utility",
+      "maintainer": "jdndu <contact@clovernote.com>"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 410,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 150,
+          "type": "file"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "CloverNote",
+      "runAfterFinish": true,
+      "uninstallDisplayName": "CloverNote",
+      "deleteAppDataOnUninstall": false
+    },
+    "fileAssociations": [
+      {
+        "ext": "txt",
+        "name": "Text File",
+        "description": "Text document",
+        "role": "Editor"
+      }
+    ],
+    "files": [
+      "**/*"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^24.9.1",
+    "rimraf": "^6.1.2"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "electron-updater": "^6.7.3",
+    "puter": "^1.0.0",
+    "stripe": "^20.2.0"
+  }
+}

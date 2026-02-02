@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <!-- Sidebar for Tablet -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/sidebar"
+        android:layout_width="320dp"
+        android:layout_height="0dp"
+        android:background="#F9FAFB"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/sidebar_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="#064e3b"
+            app:title="CloverNote"
+            app:titleTextColor="#FFFFFF"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/notes_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:padding="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/sidebar_toolbar" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_add_note"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:contentDescription="Add Note"
+            android:src="@android:drawable/ic_input_add"
+            app:backgroundTint="#064e3b"
+            app:tint="#FFFFFF"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:background="#F1F5F9"
+        app:layout_constraintStart_toEndOf="@id/sidebar" />
+
+    <!-- Detail View for Tablet -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/detail_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/divider"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <EditText
+            android:id="@+id/note_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="32dp"
+            android:background="@null"
+            android:hint="Untitled Document"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/note_content"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="32dp"
+            android:background="@null"
+            android:gravity="top"
+            android:hint="Start writing here..."
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/note_title" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

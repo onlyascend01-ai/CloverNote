@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CloverNote</title>
+    <style>
+        :root { --primary: #064e3b; --sidebar-w: 350px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #ffffff;
+            margin: 0; padding: 0;
+            height: 100vh; width: 100vw;
+            overflow: hidden;
+            color: #1e293b;
+        }
+
+        .app-container { display: flex; height: 100vh; width: 100vw; position: relative; }
+
+        .sidebar {
+            width: 100%; height: 100%;
+            background: #ffffff;
+            display: flex; flex-direction: column;
+            border-right: 1px solid #f1f5f9;
+            z-index: 10;
+        }
+
+        .editor-view {
+            position: absolute; inset: 0;
+            background: white;
+            display: flex; flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 20;
+            transform: translateX(100%);
+        }
+        .editor-active { transform: translateX(0); }
+
+        @media (min-width: 768px) {
+            .sidebar { width: var(--sidebar-w); transform: none !important; }
+            .editor-view { position: relative; flex: 1; transform: none !important; border-left: 1px solid #f1f5f9; }
+            #btn-back { display: none !important; }
+            #empty-state { display: flex !important; }
+        }
+
+        .header {
+            padding: 16px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .safe-pt { padding-top: env(safe-area-inset-top, 24px); }
+
+        .btn {
+            background: var(--primary); color: white; border: none;
+            padding: 8px 16px; border-radius: 8px; font-weight: bold;
+            font-size: 14px; cursor: pointer;
+        }
+        .btn-round { width: 44px; height: 44px; border-radius: 12px; font-size: 24px; padding: 0; display: flex; align-items: center; justify-content: center; }
+        .btn-text { background: none; color: var(--primary); padding: 0; }
+        .btn-danger { color: #ef4444 !important; }
+
+        .notes-list { flex: 1; overflow-y: auto; padding: 16px; }
+        .note-card {
+            padding: 16px; border: 1px solid #f1f5f9; border-radius: 12px;
+            margin-bottom: 12px; cursor: pointer; background: white;
+        }
+        .note-card.active { border-color: var(--primary); background: #f0fdf4; }
+
+        .editor-body { flex: 1; display: flex; flex-direction: column; padding: 24px; }
+        .title-input {
+            width: 100%; font-size: 32px; font-weight: 900;
+            border: none; outline: none; margin-bottom: 16px; color: #0f172a;
+        }
+        .content-area { flex: 1; font-size: 18px; outline: none; line-height: 1.6; color: #334155; }
+
+        #empty-state {
+            display: none; flex: 1; align-items: center; justify-content: center;
+            color: #cbd5e1; text-align: center; font-weight: 900;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <header class="header safe-pt">
+                <h1 style="margin:0; font-size:24px; font-weight:900;">Vault</h1>
+                <button id="btn-create" class="btn btn-round" type="button">+</button>
+            </header>
+            <div id="notes-list" class="notes-list"></div>
+        </aside>
+
+        <main id="view-editor" class="editor-view">
+            <div id="empty-state">SELECT A MANUSCRIPT</div>
+
+            <div id="editor-content" style="display:none; height:100%; flex-direction:column;">
+                <header class="header safe-pt">
+                    <button id="btn-back" class="btn btn-text" type="button">&larr; Back</button>
+                    <div id="save-indicator" style="font-size:10px; opacity:0.3; font-weight:900;">SAVED</div>
+                    <button id="btn-delete" class="btn btn-text btn-danger" type="button">Delete</button>
+                </header>
+                <div class="editor-body">
+                    <input type="text" id="editor-title" placeholder="Untitled" class="title-input">
+                    <div id="mobile-editor" contenteditable="true" placeholder="Start writing..." class="content-area"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        window.onerror = function(m, u, l) { console.log("JS ERROR: " + m + " at " + l); };
+
+        let notes = [];
+        let activeNoteId = null;
+
+        function init() {
+            console.log("Initializing UI...");
+            try {
+                loadData();
+                renderList();
+
+                // Direct assignment for maximum compatibility
+                document.getElementById('btn-create').onclick = createNote;
+                document.getElementById('btn-back').onclick = hideEditor;
+                document.getElementById('btn-delete').onclick = deleteNote;
+
+                document.getElementById('editor-title').oninput = autoSave;
+                document.getElementById('mobile-editor').oninput = autoSave;
+
+                console.log("UI Initialized successfully.");
+            } catch (e) {
+                console.log("Init Failed: " + e.message);
+            }
+        }
+
+        function loadData() {
+            try {
+                const data = localStorage.getItem('clover-notes');
+                notes = data ? JSON.parse(data) : [];
+                console.log("Loaded " + notes.length + " notes.");
+            } catch(e) {
+                console.log("Data load error, resetting.");
+                notes = [];
+            }
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem('clover-notes', JSON.stringify(notes));
+            } catch(e) { console.log("Save error."); }
+        }
+
+        function renderList() {
+            const list = document.getElementById('notes-list');
+            if (!list) return;
+            list.innerHTML = '';
+            if (notes.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding-top:60px; color:#cbd5e1; font-weight:bold;">NO DOCUMENTS</div>';
+                return;
+            }
+            notes.forEach(n => {
+                const el = document.createElement('div');
+                el.className = `note-card ${activeNoteId === n.id ? 'active' : ''}`;
+                const dateStr = n.updatedAt ? new Date(n.updatedAt).toLocaleDateString() : 'Just now';
+                el.innerHTML = `<div style="font-weight:bold;">${n.title || 'Untitled'}</div>
+                                <div style="font-size:11px; opacity:0.5; margin-top:4px;">${dateStr}</div>`;
+                el.onclick = function() { showEditor(n.id); };
+                list.appendChild(el);
+            });
+        }
+
+        function showEditor(id) {
+            console.log("Opening note: " + id);
+            activeNoteId = id;
+            const n = notes.find(x => x.id === id);
+            if (n) {
+                document.getElementById('empty-state').style.display = 'none';
+                document.getElementById('editor-content').style.display = 'flex';
+                document.getElementById('editor-title').value = n.title || '';
+                document.getElementById('mobile-editor').innerHTML = n.content || '';
+                document.getElementById('view-editor').classList.add('editor-active');
+                renderList();
+            }
+        }
+
+        function hideEditor() {
+            activeNoteId = null;
+            document.getElementById('view-editor').classList.remove('editor-active');
+            renderList();
+        }
+
+        function createNote() {
+            console.log("Plus button clicked!");
+            const n = {
+                id: Date.now().toString(),
+                title: '',
+                content: '',
+                updatedAt: new Date().toISOString()
+            };
+            notes.unshift(n);
+            saveData();
+            showEditor(n.id);
+        }
+
+        function deleteNote() {
+            if (!activeNoteId) return;
+            notes = notes.filter(n => n.id !== activeNoteId);
+            saveData();
+            if (window.innerWidth < 768) {
+                hideEditor();
+            } else {
+                activeNoteId = null;
+                document.getElementById('empty-state').style.display = 'flex';
+                document.getElementById('editor-content').style.display = 'none';
+                renderList();
+            }
+        }
+
+        let timer;
+        function autoSave() {
+            document.getElementById('save-indicator').innerText = "SAVING...";
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                const n = notes.find(x => x.id === activeNoteId);
+                if (n) {
+                    n.title = document.getElementById('editor-title').value;
+                    n.content = document.getElementById('mobile-editor').innerHTML;
+                    n.updatedAt = new Date().toISOString();
+                    saveData();
+                    document.getElementById('save-indicator').innerText = "SAVED";
+                }
+            }, 600);
+        }
+
+        // Initialize immediately
+        window.onload = init;
+    </script>
+</body>
+</html>

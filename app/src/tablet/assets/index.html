@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CloverNote Tablet</title>
+
+    <!-- We move these to the bottom or use 'defer' so they don't block the start -->
+    <script src="https://cdn.tailwindcss.com" defer></script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
+
+    <style>
+        /* This CSS loads instantly because it is inside the file */
+        body {
+            font-family: sans-serif;
+            background-color: #ffffff;
+            margin: 0; padding: 0;
+            height: 100vh; width: 100vw;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 350px;
+            height: 100vh;
+            background: #fafafa;
+            border-right: 1px solid #f1f5f9;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header {
+            padding: 40px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vault-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #064e3b;
+        }
+
+        .btn-plus {
+            background: #064e3b;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <header class="header">
+            <h1 class="vault-title">Vault</h1>
+            <button class="btn-plus" onclick="createNote()">+</button>
+        </header>
+        <div id="notes-list" style="flex:1; overflow-y:auto; padding: 20px;">
+            <!-- Notes will appear here -->
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div id="empty-state" style="text-align:center; color:#94a3b8;">
+            <h2 style="font-weight: 800; font-size: 24px;">Creative Sanctuary</h2>
+            <p>Select a note to begin</p>
+        </div>
+
+        <div id="editor-ui" style="display:none; width:100%; height:100%; flex-direction:column; padding:60px;">
+            <input type="text" id="editor-title" placeholder="Untitled" style="font-size:48px; font-weight:900; border:none; outline:none; margin-bottom:30px; width:100%;">
+            <div id="tablet-editor" contenteditable="true" style="font-size:20px; outline:none; flex:1;"></div>
+        </div>
+    </main>
+
+    <script>
+        // App logic runs immediately
+        let notes = [];
+        let activeNoteId = null;
+
+        function init() {
+            const data = localStorage.getItem('clover-data-guest');
+            notes = data ? JSON.parse(data) : [];
+            renderList();
+
+            // Check if lucide loaded eventually
+            let iconCheck = setInterval(() => {
+                if (window.lucide) {
+                    lucide.createIcons();
+                    clearInterval(iconCheck);
+                }
+            }, 1000);
+        }
+
+        function renderList() {
+            const list = document.getElementById('notes-list');
+            list.innerHTML = '';
+            notes.forEach(n => {
+                const div = document.createElement('div');
+                div.style.padding = '20px';
+                div.style.background = 'white';
+                div.style.borderRadius = '12px';
+                div.style.marginBottom = '10px';
+                div.style.border = '1px solid #f1f5f9';
+                div.style.fontWeight = 'bold';
+                div.innerText = n.title || 'Untitled';
+                div.onclick = () => selectNote(n.id);
+                list.appendChild(div);
+            });
+        }
+
+        function selectNote(id) {
+            activeNoteId = id;
+            const n = notes.find(x => x.id === id);
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('editor-ui').style.display = 'flex';
+            document.getElementById('editor-title').value = n.title || '';
+            document.getElementById('tablet-editor').innerHTML = n.content || '';
+        }
+
+        function createNote() {
+            const n = { id: Date.now().toString(), title: '', content: '' };
+            notes.unshift(n);
+            localStorage.setItem('clover-data-guest', JSON.stringify(notes));
+            selectNote(n.id);
+            renderList();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

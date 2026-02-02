@@ -1,0 +1,97 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.clovernote.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.clovernote.app"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    flavorDimensions "device"
+    productFlavors {
+        phone {
+            dimension "device"
+            applicationId "com.clovernote.phone"
+        }
+        tablet {
+            dimension "device"
+            applicationId "com.clovernote.tablet"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            // Disable compression for assets to make debugging faster
+            aaptOptions {
+                noCompress 'html', 'png'
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+}
+
+// FORCE REBUILD ASSETS TASK
+tasks.register('rebuildAssets') {
+    doLast {
+        println "FORCING ASSET REBUILD..."
+        
+        // Clean existing assets first to prevent caching
+        delete "src/phone/assets"
+        delete "src/tablet/assets"
+        
+        mkdir "src/phone/assets"
+        mkdir "src/tablet/assets"
+
+        // Phone Assets
+        copy {
+            from ".."
+            include "mobile.html", "CloverNote.png"
+            into "src/phone/assets"
+            rename { it == 'mobile.html' ? 'index.html' : it }
+        }
+        
+        // Tablet Assets
+        copy {
+            from "../Tablet"
+            include "tablet.html"
+            into "src/tablet/assets"
+            rename { it == 'tablet.html' ? 'index.html' : it }
+        }
+        copy {
+            from ".."
+            include "CloverNote.png"
+            into "src/tablet/assets"
+        }
+    }
+}
+
+// Ensure this runs before EVERY build
+preBuild.dependsOn rebuildAssets
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+}

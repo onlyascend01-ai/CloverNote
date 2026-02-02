@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link rel="icon" type="image/png" href="../CloverNote.png">
+    <title>CloverNote Tablet | Ultra Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #064e3b;
+            --primary-light: #ecfdf5;
+            --bg: #ffffff;
+            --sidebar-w: 400px;
+
+            /* High-End Easing Functions */
+            --expo-out: cubic-bezier(0.19, 1, 0.22, 1);
+            --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --smooth: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #ffffff;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Initial Page Reveal */
+        .app-grid {
+            display: grid;
+            grid-template-columns: var(--sidebar-w) 1fr;
+            height: 100vh;
+            opacity: 0;
+            transform: scale(1.01);
+            animation: appReveal 1.2s var(--expo-out) forwards;
+        }
+
+        @keyframes appReveal {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            border-right: 1px solid #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            background: #fafafa;
+            position: relative;
+            z-index: 20;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+        /* Advanced Note Card Animations */
+        .note-card {
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            border-radius: 24px;
+            padding: 24px;
+            margin: 0 24px 16px 24px;
+            cursor: pointer;
+            transition:
+                transform 0.6s var(--spring),
+                box-shadow 0.6s var(--expo-out),
+                border-color 0.4s var(--smooth),
+                background-color 0.4s var(--smooth),
+                opacity 0.6s var(--smooth);
+            position: relative;
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        .note-card.revealed {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .note-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 40px -12px rgba(0,0,0,0.08);
+            border-color: #e2e8f0;
+        }
+
+        .note-card.active {
+            border-color: var(--primary);
+            background: #f0fdf4;
+            transform: scale(1.05) translateX(10px);
+            box-shadow: 0 30px 60px -15px rgba(6, 78, 59, 0.15);
+        }
+
+        /* Sidebar Active Indicator */
+        .note-card.active::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 25%;
+            height: 50%;
+            width: 4px;
+            background: var(--primary);
+            border-radius: 10px;
+            animation: indicatorReveal 0.5s var(--spring);
+        }
+
+        @keyframes indicatorReveal {
+            from { transform: scaleY(0); opacity: 0; }
+            to { transform: scaleY(1); opacity: 1; }
+        }
+
+        /* Editor Zone & Transitions */
+        .editor-zone {
+            display: flex;
+            flex-direction: column;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .editor-animate-in {
+            animation: editorReveal 0.8s var(--expo-out) both;
+        }
+
+        @keyframes editorReveal {
+            from { opacity: 0; transform: translateY(40px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Micro-interactions */
+        .btn-action {
+            transition: all 0.3s var(--spring);
+        }
+
+        .btn-action:active { transform: scale(0.85); }
+        .btn-action:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+        /* Save Status Pulse */
+        #save-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.4s var(--expo-out);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .dot.syncing {
+            background: #f59e0b;
+            animation: dotPulse 1s infinite;
+        }
+
+        @keyframes dotPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.6); opacity: 0.4; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Empty State Float */
+        .floating {
+            animation: floating 8s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-30px) rotate(2deg); }
+        }
+
+        /* Blur Header Background */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .safe-pt { padding-top: env(safe-area-inset-top, 40px); }
+    </style>
+</head>
+<body>
+
+    <div class="app-grid">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <header class="safe-pt px-10 py-10 flex justify-between items-center">
+                <div class="flex items-center gap-5">
+                    <img src="../CloverNote.png" class="w-16 h-16 rounded-[24px] shadow-2xl shadow-emerald-900/20 transform hover:rotate-6 hover:scale-110 transition-all duration-500">
+                    <div>
+                        <h1 class="text-5xl font-black text-emerald-950 tracking-tighter">Vault</h1>
+                        <p class="text-[10px] font-bold text-emerald-800/30 uppercase tracking-[0.4em] mt-2">CloverNote Pro</p>
+                    </div>
+                </div>
+                <button id="btn-create" class="btn-action bg-emerald-900 text-white p-5 rounded-[28px] shadow-2xl shadow-emerald-900/30">
+                    <i data-lucide="plus" class="w-8 h-8"></i>
+                </button>
+            </header>
+
+            <div id="notes-list" class="flex-1 overflow-y-auto custom-scrollbar pt-4 pb-24">
+                <!-- Notes will animate in via JS -->
+            </div>
+        </aside>
+
+        <!-- Main Editor -->
+        <main class="editor-zone">
+            <!-- Content UI -->
+            <div id="editor-ui" class="hidden h-full flex flex-col">
+                <header class="safe-pt px-16 py-8 flex justify-between items-center glass-header sticky top-0 z-30 border-b border-slate-50">
+                    <div id="save-status">
+                        <div class="dot"></div>
+                        <span class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Vault Encrypted</span>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="btn-action p-3.5 bg-slate-50 text-slate-400 rounded-[20px] hover:text-emerald-900">
+                            <i data-lucide="sparkles" class="w-6 h-6"></i>
+                        </button>
+                        <button id="btn-delete" class="btn-action p-3.5 bg-red-50 text-red-400 rounded-[20px] hover:bg-red-100">
+                            <i data-lucide="trash-2" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </header>
+
+                <div class="flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="max-w-4xl mx-auto px-16 py-24 w-full">
+                        <input type="text" id="editor-title" placeholder="A New Tale..."
+                            class="w-full text-7xl font-black outline-none border-none mb-12 text-slate-900 placeholder:text-slate-100 tracking-tight leading-[1.1]">
+                        <div id="tablet-editor" contenteditable="true" placeholder="Start your composition..."
+                            class="text-2xl leading-relaxed text-slate-600 outline-none min-h-[60vh]"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Empty View -->
+            <div id="empty-view" class="absolute inset-0 flex flex-col items-center justify-center p-20 text-center bg-white transition-all duration-1000">
+                <div class="floating relative mb-16">
+                    <div class="absolute inset-0 bg-emerald-100 blur-[80px] rounded-full opacity-30 scale-150"></div>
+                    <div class="relative bg-white p-14 rounded-[60px] shadow-[0_50px_120px_-30px_rgba(6,78,59,0.15)] border border-slate-50">
+                        <img src="../CloverNote.png" class="w-32 h-32 opacity-10 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                    </div>
+                </div>
+                <h2 class="text-4xl font-black text-slate-800 mb-4 tracking-tight">Your Creative Sanctuary</h2>
+                <p class="text-slate-400 max-w-sm text-lg leading-relaxed">Select a manuscript or begin a fresh composition to start your journey.</p>
+                <button onclick="createNote()" class="btn-action mt-12 px-12 py-5 bg-emerald-50 text-emerald-900 font-bold rounded-[24px] text-lg hover:bg-emerald-100">
+                    New Composition
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let notes = [];
+        let activeNoteId = null;
+
+        function init() {
+            lucide.createIcons();
+            loadData();
+            renderList(true); // Initial staggered reveal
+
+            document.getElementById('btn-create').addEventListener('click', createNote);
+            document.getElementById('btn-delete').addEventListener('click', deleteNote);
+            document.getElementById('editor-title').addEventListener('input', () => autoSave());
+            document.getElementById('tablet-editor').addEventListener('input', () => autoSave());
+
+            // Initial selection logic
+            if (notes.length > 0) {
+                setTimeout(() => selectNote(notes[0].id), 900);
+            }
+        }
+
+        function loadData() {
+            const data = localStorage.getItem('clover-data-guest');
+            notes = data ? JSON.parse(data) : [];
+        }
+
+        function saveData() {
+            localStorage.setItem('clover-data-guest', JSON.stringify(notes));
+        }
+
+        function renderList(shouldStagger = false) {
+            const list = document.getElementById('notes-list');
+            list.innerHTML = '';
+
+            notes.forEach((n, i) => {
+                const card = document.createElement('div');
+                card.className = `note-card ${activeNoteId === n.id ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="font-extrabold text-slate-800 text-2xl truncate mb-2">${n.title || 'Untitled'}</div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">${new Date(n.updatedAt).toLocaleDateString()}</span>
+                        <div class="w-1 h-1 rounded-full bg-slate-200"></div>
+                        <span class="text-[10px] font-bold text-slate-300 uppercase">${(n.content || '').split(' ').length} words</span>
+                    </div>
+                `;
+                card.onclick = () => selectNote(n.id);
+                list.appendChild(card);
+
+                if (shouldStagger) {
+                    setTimeout(() => card.classList.add('revealed'), i * 80 + 400);
+                } else {
+                    card.classList.add('revealed');
+                }
+            });
+        }
+
+        function selectNote(id) {
+            if (activeNoteId === id) return;
+
+            const ui = document.getElementById('editor-ui');
+            const empty = document.getElementById('empty-view');
+
+            // Subtle transition out
+            ui.style.opacity = '0';
+            ui.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                activeNoteId = id;
+                const n = notes.find(x => x.id === id);
+
+                empty.style.opacity = '0';
+                empty.style.pointerEvents = 'none';
+                ui.classList.remove('hidden');
+
+                document.getElementById('editor-title').value = n.title || '';
+                document.getElementById('tablet-editor').innerHTML = n.content || '';
+
+                // Re-trigger animation
+                ui.classList.remove('editor-animate-in');
+                void ui.offsetWidth; // Force reflow
+                ui.classList.add('editor-animate-in');
+                ui.style.opacity = '1';
+                ui.style.transform = 'translateY(0)';
+
+                renderList(false);
+            }, activeNoteId ? 200 : 0);
+        }
+
+        function createNote() {
+            const n = {
+                id: Date.now().toString(),
+                title: '',
+                content: '',
+                updatedAt: new Date().toISOString()
+            };
+            notes.unshift(n);
+            saveData();
+            renderList(false);
+            selectNote(n.id);
+
+            setTimeout(() => {
+                const titleInput = document.getElementById('editor-title');
+                titleInput.focus();
+            }, 800);
+        }
+
+        function deleteNote() {
+            if (!activeNoteId) return;
+
+            const card = document.querySelector(`.note-card.active`);
+            if (card) {
+                card.style.transform = 'translateX(-150px) scale(0.8)';
+                card.style.opacity = '0';
+            }
+
+            setTimeout(() => {
+                notes = notes.filter(n => n.id !== activeNoteId);
+                saveData();
+
+                if (notes.length > 0) {
+                    selectNote(notes[0].id);
+                } else {
+                    activeNoteId = null;
+                    document.getElementById('empty-view').style.opacity = '1';
+                    document.getElementById('empty-view').style.pointerEvents = 'auto';
+                    document.getElementById('editor-ui').classList.add('hidden');
+                    renderList(false);
+                }
+            }, 500);
+        }
+
+        let saveTimer;
+        function autoSave() {
+            const dot = document.querySelector('.dot');
+            const status = document.querySelector('#save-status span');
+
+            dot.classList.add('syncing');
+            status.textContent = "Updating Vault...";
+
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => {
+                const n = notes.find(x => x.id === activeNoteId);
+                if (n) {
+                    n.title = document.getElementById('editor-title').value;
+                    n.content = document.getElementById('tablet-editor').innerHTML;
+                    n.updatedAt = new Date().toISOString();
+                    saveData();
+
+                    dot.classList.remove('syncing');
+                    status.textContent = "Vault Encrypted";
+
+                    // Sync sidebar title live
+                    const activeTitle = document.querySelector('.note-card.active .truncate');
+                    if (activeTitle) activeTitle.textContent = n.title || 'Untitled';
+                }
+            }, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

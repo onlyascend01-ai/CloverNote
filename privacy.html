@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - CloverNote</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #064e3b;
+            --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s var(--ease-out-expo), transform 1s var(--ease-out-expo);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .animate-in { animation: fadeInUp 1s var(--ease-out-expo) forwards; }
+
+        .policy-section { transition: all 0.4s var(--ease-out-expo); }
+        .policy-section:hover { transform: translateX(10px); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen p-6 md:p-12">
+    <div class="max-w-3xl mx-auto bg-white rounded-[3rem] p-12 md:p-20 shadow-2xl animate-in">
+        <h1 class="text-5xl font-black mb-8 tracking-tight text-emerald-950 reveal">Privacy Policy</h1>
+        <p class="text-xl font-bold text-emerald-600 mb-12 reveal">Your data never leaves your machine.</p>
+
+        <div class="space-y-12 text-slate-600 leading-relaxed reveal">
+            <section class="policy-section">
+                <h2 class="text-xl font-black text-slate-900 uppercase tracking-widest mb-4">Data Sovereignty</h2>
+                <p>CloverNote is built on the principle of data sovereignty. We do not collect, store, or transmit your notes to any servers. All your thoughts are stored locally in an encrypted vault on your device.</p>
+            </section>
+
+            <section class="policy-section">
+                <h2 class="text-xl font-black text-slate-900 uppercase tracking-widest mb-4">Zero Telemetry</h2>
+                <p>We do not track your usage, keystrokes, or application behavior. CloverNote is a pure local-first tool designed for absolute privacy.</p>
+            </section>
+
+            <section class="policy-section">
+                <h2 class="text-xl font-black text-slate-900 uppercase tracking-widest mb-4">Encryption</h2>
+                <p>Notes are encrypted using AES-256 standards when a vault password is set. This encryption happens entirely on your local CPU.</p>
+            </section>
+        </div>
+
+        <div class="mt-20 pt-12 border-t border-slate-100 flex justify-between items-center reveal">
+            <a href="index.html" class="text-xs font-black uppercase text-slate-400 hover:text-emerald-700 transition-all tracking-widest flex items-center gap-2 hover:gap-4">
+                ← Back to Home
+            </a>
+            <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Effective 2026</p>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
