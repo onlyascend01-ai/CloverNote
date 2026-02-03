@@ -31,16 +31,15 @@
     },
     "mac": {
       "target": [
-        "dmg",
-        "zip"
+        "zip",
+        "dmg"
       ],
       "icon": "CloverNote.png",
       "category": "public.app-category.utilities"
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb"
+        "AppImage"
       ],
       "icon": "CloverNote.png",
       "category": "Utility",
