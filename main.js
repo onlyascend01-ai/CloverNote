@@ -151,6 +151,19 @@ ipcMain.handle('open-file', async (event, filePath) => {
   return false;
 });
 
+ipcMain.handle('download-attachment', async (event, sourcePath, fileName) => {
+  if (!fs.existsSync(sourcePath)) return false;
+  const { filePath } = await dialog.showSaveDialog({
+    defaultPath: fileName,
+    title: 'Download Attachment'
+  });
+  if (filePath) {
+    fs.copyFileSync(sourcePath, filePath);
+    return true;
+  }
+  return false;
+});
+
 ipcMain.handle('export-pdf', async (event, title) => {
   const { filePath } = await dialog.showSaveDialog({
     defaultPath: `${title || 'note'}.pdf`,

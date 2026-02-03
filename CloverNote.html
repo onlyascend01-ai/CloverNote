@@ -137,26 +137,43 @@
     }
     .editor-image-wrapper:hover .resizer { opacity: 1; }
 
-    .delete-img-btn {
-        position: absolute;
-        top: 8px; right: 8px;
+    .action-btn {
         width: 24px; height: 24px;
-        background: rgba(239, 68, 68, 0.9);
-        color: white;
+        background: rgba(255, 255, 255, 0.9);
+        color: #64748b;
         border-radius: 6px;
         display: flex; align-items: center; justify-content: center;
         opacity: 0; transition: all 0.2s;
         cursor: pointer; z-index: 20;
+        border: 1px solid #e2e8f0;
     }
-    .editor-image-wrapper:hover .delete-img-btn { opacity: 1; }
+    .action-btn:hover { background: white; color: var(--primary); }
+    .action-btn.delete { background: rgba(239, 68, 68, 0.9); color: white; border: none; }
+    .action-btn.delete:hover { background: #ef4444; }
+
+    .editor-image-wrapper:hover .action-btn, .file-attachment:hover .action-btn { opacity: 1; }
+
+    .image-actions {
+        position: absolute;
+        top: 8px; right: 8px;
+        display: flex; gap: 4px;
+    }
+
+    .file-actions {
+        position: absolute;
+        top: -12px; right: -12px;
+        display: flex; gap: 4px;
+    }
+    .file-actions .action-btn { width: 20px; height: 20px; border-radius: 50%; }
 
     /* Attachment Styling */
     .file-attachment {
         display: inline-flex; align-items: center; gap: 8px;
         background: #f8fafc; border: 1px solid #e2e8f0;
         padding: 8px 12px; border-radius: 12px;
-        margin: 8px 0; cursor: pointer; user-select: none;
+        margin: 8px 0; cursor: move; user-select: none;
         transition: all 0.2s;
+        position: relative;
     }
     .file-attachment:hover { border-color: var(--primary-light); background: #f0fdf4; transform: translateY(-1px); }
     .file-attachment .icon { color: var(--primary); }
@@ -467,29 +484,43 @@ function init() {
         updateToolbarState();
     });
 
-    // Image interactions support
-    setupImageInteractions();
+    // Element interactions support (images and files)
+    setupElementInteractions();
 
     editor.addEventListener('click', (e) => {
-        if (e.target.closest('.delete-img-btn')) {
-            e.target.closest('.editor-image-wrapper').remove();
+        const delBtn = e.target.closest('.action-btn.delete');
+        if (delBtn) {
+            delBtn.closest('.editor-image-wrapper, .file-attachment').remove();
             updateNote('content', editor.innerHTML);
+            return;
+        }
+
+        const downloadBtn = e.target.closest('.action-btn.download');
+        if (downloadBtn) {
+            const attachment = downloadBtn.closest('.file-attachment');
+            const filePath = attachment.dataset.path;
+            const fileName = attachment.querySelector('.name').innerText;
+            if (filePath) window.electronAPI.downloadAttachment(filePath, fileName);
+            return;
         }
 
         const attachment = e.target.closest('.file-attachment');
-        if (attachment) {
+        if (attachment && !e.target.closest('.action-btn')) {
             const filePath = attachment.dataset.path;
-            if (filePath) window.electronAPI.openFile(filePath);
+            if (filePath && e.ctrlKey) window.electronAPI.openFile(filePath);
         }
     });
 }
 
-function setupImageInteractions() {
+function setupElementInteractions() {
     const editor = document.getElementById('note-content-input');
 
     editor.addEventListener('mousedown', (e) => {
-        const wrapper = e.target.closest('.editor-image-wrapper');
+        const wrapper = e.target.closest('.editor-image-wrapper, .file-attachment');
         if (!wrapper) return;
+
+        // Skip if clicking action buttons
+        if (e.target.closest('.action-btn')) return;
 
         if (e.target.classList.contains('resizer')) {
             e.preventDefault();
@@ -510,7 +541,8 @@ function setupImageInteractions() {
 
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mouseup', onMouseUp);
-        } else if (e.target.tagName === 'IMG') {
+        } else {
+            // Dragging logic for both images and files
             e.preventDefault();
 
             const editorRect = editor.getBoundingClientRect();
@@ -817,13 +849,13 @@ async function insertImage() {
         const resizer = document.createElement('div');
         resizer.className = 'resizer';
 
-        const delBtn = document.createElement('div');
-        delBtn.className = 'delete-img-btn';
-        delBtn.innerHTML = '<i data-lucide="trash-2" class="w-3 h-3"></i>';
+        const actions = document.createElement('div');
+        actions.className = 'image-actions';
+        actions.innerHTML = '<div class="action-btn delete" title="Delete"><i data-lucide="trash-2" class="w-3 h-3"></i></div>';
 
         wrapper.appendChild(img);
         wrapper.appendChild(resizer);
-        wrapper.appendChild(delBtn);
+        wrapper.appendChild(actions);
 
         const editor = document.getElementById('note-content-input');
         editor.focus();
@@ -852,6 +884,10 @@ async function attachFile() {
         attachment.innerHTML = `
             <i data-lucide="file" class="icon w-4 h-4"></i>
             <span class="name">${file.name}</span>
+            <div class="file-actions">
+                <div class="action-btn download" title="Download"><i data-lucide="download" class="w-3 h-3"></i></div>
+                <div class="action-btn delete" title="Delete"><i data-lucide="trash-2" class="w-3 h-3"></i></div>
+            </div>
         `;
 
         const editor = document.getElementById('note-content-input');
