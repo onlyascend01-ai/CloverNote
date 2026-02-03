@@ -62,7 +62,6 @@ ipcMain.handle('generate-ai-content', async (event, prompt, apiKey) => {
 
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  // Updated list of models to try in order of preference
   const modelsToTry = [
     "gemini-2.0-flash",
     "gemini-1.5-flash",
@@ -87,20 +86,15 @@ ipcMain.handle('generate-ai-content', async (event, prompt, apiKey) => {
     } catch (error) {
       console.warn(`Model ${modelName} failed:`, error.message);
       lastError = error;
-
-      // If it's a permission/key error (403, 401), stop and report it
       if (error.message.includes("403") || error.message.includes("API_KEY_INVALID") || error.message.includes("permission")) {
         throw new Error(`API Key error: ${error.message}. Please check your key permissions.`);
       }
-
-      // Continue to next model if this one wasn't found or is overloaded
     }
   }
 
-  // If we get here, all models failed
   console.error("All Gemini models failed to load.");
   const detailedError = lastError ? lastError.message : "Unknown error";
-  throw new Error(`Compatible model not found. Last error: ${detailedError}. Ensure 'Generative Language API' is enabled in your Google AI Studio or Cloud Console.`);
+  throw new Error(`Compatible model not found. Last error: ${detailedError}`);
 });
 
 ipcMain.handle('save-file', async (event, content, defaultPath) => {
@@ -135,6 +129,26 @@ ipcMain.handle('pick-image', async () => {
     return `data:image/${extension};base64,${base64Image}`;
   }
   return null;
+});
+
+ipcMain.handle('pick-attachment', async () => {
+  const { filePaths } = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    title: 'Select File to Attach'
+  });
+  if (filePaths && filePaths.length > 0) {
+    const filePath = filePaths[0];
+    return { name: path.basename(filePath), path: filePath };
+  }
+  return null;
+});
+
+ipcMain.handle('open-file', async (event, filePath) => {
+  if (fs.existsSync(filePath)) {
+    shell.openPath(filePath);
+    return true;
+  }
+  return false;
 });
 
 ipcMain.handle('export-pdf', async (event, title) => {

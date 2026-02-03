@@ -150,6 +150,18 @@
     }
     .editor-image-wrapper:hover .delete-img-btn { opacity: 1; }
 
+    /* Attachment Styling */
+    .file-attachment {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: #f8fafc; border: 1px solid #e2e8f0;
+        padding: 8px 12px; border-radius: 12px;
+        margin: 8px 0; cursor: pointer; user-select: none;
+        transition: all 0.2s;
+    }
+    .file-attachment:hover { border-color: var(--primary-light); background: #f0fdf4; transform: translateY(-1px); }
+    .file-attachment .icon { color: var(--primary); }
+    .file-attachment .name { font-size: 13px; font-weight: 700; color: #475569; }
+
     /* Toolbar Styling */
     .toolbar { height: 48px; background: #fff; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; padding: 0 20px; gap: 8px; }
     .tool-btn {
@@ -279,6 +291,7 @@
                 <div id="btn-right" class="tool-btn" title="Right Align" onmousedown="event.preventDefault(); execCommand('justifyRight')"><i data-lucide="align-right" class="w-4 h-4"></i></div>
                 <div class="tool-sep"></div>
                 <div class="tool-btn" title="Image" onclick="insertImage()"><i data-lucide="image" class="w-4 h-4"></i></div>
+                <div class="tool-btn" title="Attach File" onclick="attachFile()"><i data-lucide="paperclip" class="w-4 h-4"></i></div>
                 <div class="tool-sep"></div>
                 <div class="flex items-center gap-2 bg-slate-50/50 px-3 py-1.5 rounded-xl border border-slate-100">
                     <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Title</span>
@@ -461,6 +474,12 @@ function init() {
         if (e.target.closest('.delete-img-btn')) {
             e.target.closest('.editor-image-wrapper').remove();
             updateNote('content', editor.innerHTML);
+        }
+
+        const attachment = e.target.closest('.file-attachment');
+        if (attachment) {
+            const filePath = attachment.dataset.path;
+            if (filePath) window.electronAPI.openFile(filePath);
         }
     });
 }
@@ -816,6 +835,35 @@ async function insertImage() {
             range.collapse(false);
         } else {
             editor.appendChild(wrapper);
+        }
+
+        updateNote('content', editor.innerHTML);
+        lucide.createIcons();
+    }
+}
+
+async function attachFile() {
+    const file = await window.electronAPI.pickAttachment();
+    if (file) {
+        const attachment = document.createElement('div');
+        attachment.className = 'file-attachment';
+        attachment.contentEditable = 'false';
+        attachment.dataset.path = file.path;
+        attachment.innerHTML = `
+            <i data-lucide="file" class="icon w-4 h-4"></i>
+            <span class="name">${file.name}</span>
+        `;
+
+        const editor = document.getElementById('note-content-input');
+        editor.focus();
+
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0 && editor.contains(selection.anchorNode)) {
+            const range = selection.getRangeAt(0);
+            range.insertNode(attachment);
+            range.collapse(false);
+        } else {
+            editor.appendChild(attachment);
         }
 
         updateNote('content', editor.innerHTML);
